@@ -7,7 +7,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Plus, Activity, Moon, Sun, LogOut, Settings, User } from "lucide-react";
+import { Plus, Activity, Moon, Sun, LogOut, Settings, User, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { StatCard } from "@/components/StatCard";
 import { CalorieSummary } from "@/components/CalorieSummary";
@@ -15,6 +15,8 @@ import { MilestoneTracker } from "@/components/MilestoneTracker";
 import { WeeklyChart } from "@/components/WeeklyChart";
 import { MacroChart } from "@/components/MacroChart";
 import { DailyLogForm } from "@/components/DailyLogForm";
+import { ProPaywall } from "@/components/ProPaywall";
+import { LockedCard } from "@/components/LockedCard";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { useNavigate } from "react-router-dom";
@@ -22,6 +24,7 @@ import { useTodayLog, useStreak, useDailyLogs } from "@/hooks/useDailyLogs";
 
 const Index = () => {
   const [logOpen, setLogOpen] = useState(false);
+  const [paywallOpen, setPaywallOpen] = useState(false);
   const [dark, setDark] = useState(() => document.documentElement.classList.contains("dark"));
   const { signOut } = useAuth();
   const { data: profile } = useProfile();
@@ -72,6 +75,13 @@ const Index = () => {
           <div className="flex items-center gap-2">
             <Button variant="ghost" size="icon" onClick={() => setDark(!dark)} aria-label="Toggle dark mode">
               {dark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+            </Button>
+            <Button
+              size="sm"
+              className="bg-gold text-gold-foreground hover:bg-gold/90 shadow-sm shadow-gold/20"
+              onClick={() => setPaywallOpen(true)}
+            >
+              <Sparkles className="w-4 h-4 mr-1" /> Upgrade to Pro
             </Button>
             <Button onClick={() => setLogOpen(true)} size="sm">
               <Plus className="w-4 h-4 mr-1" /> Log Today
@@ -130,6 +140,40 @@ const Index = () => {
           <MacroChart logs={(recentLogs || []).slice(-7)} />
         </div>
 
+        <div className="grid lg:grid-cols-2 gap-6">
+          <LockedCard
+            title="Macro Cycling Scheduler"
+            description="AI-optimized carb & fat cycling for accelerated results"
+            onUnlock={() => setPaywallOpen(true)}
+          >
+            <div className="space-y-3">
+              {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((d) => (
+                <div key={d} className="flex justify-between items-center">
+                  <span className="text-sm font-medium text-foreground">{d}</span>
+                  <div className="flex gap-2">
+                    <span className="px-2 py-1 text-xs rounded bg-primary/20 text-primary">High Carb</span>
+                    <span className="px-2 py-1 text-xs rounded bg-accent/20 text-accent">Low Fat</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </LockedCard>
+          <LockedCard
+            title="Recovery & Sleep Insights"
+            description="Track sleep quality, HRV, and recovery readiness"
+            onUnlock={() => setPaywallOpen(true)}
+          >
+            <div className="space-y-3">
+              <div className="h-32 bg-muted/40 rounded-lg" />
+              <div className="grid grid-cols-3 gap-3">
+                <div className="h-16 bg-muted/40 rounded-lg" />
+                <div className="h-16 bg-muted/40 rounded-lg" />
+                <div className="h-16 bg-muted/40 rounded-lg" />
+              </div>
+            </div>
+          </LockedCard>
+        </div>
+
         <div className="rounded-xl border border-border bg-card p-6 animate-fade-in">
           <h3 className="text-lg font-semibold font-display text-card-foreground mb-3">Weekly Averages</h3>
           <div className="grid grid-cols-3 gap-4 text-center">
@@ -150,6 +194,7 @@ const Index = () => {
       </main>
 
       <DailyLogForm open={logOpen} onClose={() => setLogOpen(false)} />
+      <ProPaywall open={paywallOpen} onClose={() => setPaywallOpen(false)} />
     </div>
   );
 };
