@@ -45,6 +45,9 @@
     --chart-4: 200 70% 50%;
     --chart-5: 340 65% 55%;
 
+    --gold: 43 96% 56%;
+    --gold-foreground: 0 0% 8%;
+
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
     --sidebar-primary: 174 62% 40%;
@@ -92,6 +95,9 @@
     --chart-3: 152 55% 38%;
     --chart-4: 200 65% 55%;
     --chart-5: 340 60% 50%;
+
+    --gold: 43 96% 56%;
+    --gold-foreground: 0 0% 8%;
 
     --sidebar-background: 200 25% 7%;
     --sidebar-foreground: 180 10% 92%;
