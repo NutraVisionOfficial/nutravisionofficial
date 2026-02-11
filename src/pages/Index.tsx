@@ -17,6 +17,7 @@ import { MacroChart } from "@/components/MacroChart";
 import { DailyLogForm } from "@/components/DailyLogForm";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
+import { useNavigate } from "react-router-dom";
 import { useTodayLog, useStreak, useDailyLogs } from "@/hooks/useDailyLogs";
 
 const Index = () => {
@@ -24,6 +25,7 @@ const Index = () => {
   const [dark, setDark] = useState(() => document.documentElement.classList.contains("dark"));
   const { signOut } = useAuth();
   const { data: profile } = useProfile();
+  const navigate = useNavigate();
   const { data: todayLog } = useTodayLog();
   const { data: streak } = useStreak();
   const { data: recentLogs } = useDailyLogs(30);
@@ -85,10 +87,10 @@ const Index = () => {
                   <p className="text-sm font-medium">{profile?.name || "User"}</p>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate("/settings")}>
                   <User className="w-4 h-4 mr-2" /> Profile
                 </DropdownMenuItem>
-                <DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate("/settings")}>
                   <Settings className="w-4 h-4 mr-2" /> Settings
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
