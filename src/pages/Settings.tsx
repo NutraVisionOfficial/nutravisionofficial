@@ -98,7 +98,7 @@ export default function Settings() {
             </p>
             <button
               type="button"
-              onClick={() => navigate("/")}
+              onClick={() => navigate("/upgrade")}
               className="text-sm font-semibold text-gold hover:text-gold/80 transition-colors flex items-center gap-1"
             >
               <Sparkles className="w-3.5 h-3.5" />

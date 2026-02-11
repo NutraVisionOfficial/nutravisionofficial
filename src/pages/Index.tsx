@@ -15,7 +15,6 @@ import { MilestoneTracker } from "@/components/MilestoneTracker";
 import { WeeklyChart } from "@/components/WeeklyChart";
 import { MacroChart } from "@/components/MacroChart";
 import { DailyLogForm } from "@/components/DailyLogForm";
-import { ProPaywall } from "@/components/ProPaywall";
 import { LockedCard } from "@/components/LockedCard";
 import { FoodScanner } from "@/components/FoodScanner";
 import { useAuth } from "@/hooks/useAuth";
@@ -25,7 +24,6 @@ import { useTodayLog, useStreak, useDailyLogs } from "@/hooks/useDailyLogs";
 
 const Index = () => {
   const [logOpen, setLogOpen] = useState(false);
-  const [paywallOpen, setPaywallOpen] = useState(false);
   const [isPro] = useState(false); // free tier by default
   const [dark, setDark] = useState(() => document.documentElement.classList.contains("dark"));
   const { signOut } = useAuth();
@@ -81,7 +79,7 @@ const Index = () => {
             <Button
               size="sm"
               className="bg-gold text-gold-foreground hover:bg-gold/90 shadow-sm shadow-gold/20"
-              onClick={() => setPaywallOpen(true)}
+              onClick={() => navigate("/upgrade")}
             >
               <Sparkles className="w-4 h-4 mr-1" /> Upgrade to Pro
             </Button>
@@ -150,7 +148,7 @@ const Index = () => {
               <LockedCard
                 title="Macro Cycling Scheduler"
                 description="AI-optimized carb & fat cycling for accelerated results"
-                onUnlock={() => setPaywallOpen(true)}
+                onUnlock={() => navigate("/upgrade")}
               >
                 <div className="space-y-3">
                   {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((d) => (
@@ -167,7 +165,7 @@ const Index = () => {
               <LockedCard
                 title="Recovery & Sleep Insights"
                 description="Track sleep quality, HRV, and recovery readiness"
-                onUnlock={() => setPaywallOpen(true)}
+                onUnlock={() => navigate("/upgrade")}
               >
                 <div className="space-y-3">
                   <div className="h-32 bg-muted/40 rounded-lg" />
@@ -199,12 +197,11 @@ const Index = () => {
             </div>
           </>
         ) : (
-          <FoodScanner onOpenPaywall={() => setPaywallOpen(true)} />
+          <FoodScanner onOpenPaywall={() => navigate("/upgrade")} />
         )}
       </main>
 
       <DailyLogForm open={logOpen} onClose={() => setLogOpen(false)} />
-      <ProPaywall open={paywallOpen} onClose={() => setPaywallOpen(false)} />
     </div>
   );
 };
