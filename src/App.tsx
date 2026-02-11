@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
+import Onboarding from "./pages/Onboarding";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
@@ -14,15 +15,15 @@ const queryClient = new QueryClient();
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   if (loading) return <div className="min-h-screen bg-background flex items-center justify-center"><p className="text-muted-foreground">Loading...</p></div>;
-  if (!user) return <Navigate to="/auth" replace />;
+  if (!user) return <Navigate to="/onboarding" replace />;
   return <>{children}</>;
 }
 
-function AuthRoute() {
+function PublicOnlyRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   if (loading) return null;
   if (user) return <Navigate to="/" replace />;
-  return <Auth />;
+  return <>{children}</>;
 }
 
 const App = () => (
@@ -33,7 +34,8 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
-            <Route path="/auth" element={<AuthRoute />} />
+            <Route path="/onboarding" element={<PublicOnlyRoute><Onboarding /></PublicOnlyRoute>} />
+            <Route path="/auth" element={<PublicOnlyRoute><Auth /></PublicOnlyRoute>} />
             <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
