@@ -1,51 +1,71 @@
 
 
-# Smart Scanner Premium UI Redesign
+# Convert Pro Paywall to Full-Page Pricing with Stripe Checkout
 
 ## Overview
-Refine the Smart Scanner page into an ultra-minimalist, high-end experience with glassmorphism effects, cleaner typography, and floating card designs.
+Replace the modal-based Pro paywall with a dedicated full-page route at `/upgrade`, featuring a premium dark design with gold accents, testimonials, and a Stripe-ready checkout button. All existing "Upgrade to Pro" triggers will navigate to this new page instead of opening the old modal.
 
 ## Changes
 
-### 1. Add "breathing glow" keyframe animation (tailwind.config.ts)
-Add a new `breathing-glow` keyframe that slowly scales and fades a teal glow ring, creating a calm, premium pulsing effect for the scanner button.
+### 1. Create new Upgrade page (`src/pages/Upgrade.tsx`)
+A full-screen, dark-themed pricing page with:
 
-### 2. Redesign FoodScanner component (src/components/FoodScanner.tsx)
+- **Navigation bar**: Back arrow / X button to return to previous page
+- **Hero section**: Large "Unlock Your Full Potential" heading with subtitle "Premium tools to accelerate your 3-year transformation"
+- **Pricing toggle**: Monthly (Rs.1,000/mo) / Yearly (Rs.9,000/yr) with "Save Rs.3,000!" badge, reusing the existing Switch component
+- **Feature grid**: 2x2 grid displaying the 4 Pro features (AI Meal Planner, Advanced Analytics, 1-on-1 Coaching, VIP Challenges) with minimalist icons
+- **Social proof**: 3 mock testimonials with avatar initials, names, and quotes
+- **CTA button**: Gold "Upgrade to Pro" button with loading spinner state and a `handleCheckout` function containing a placeholder comment for the Stripe Payment Link redirect
+- **Footer text**: "Cancel anytime - 7-day free trial - Secure payment"
 
-**Typography and layout:**
-- Make the "Smart Scanner" title use `text-4xl font-extrabold tracking-tight` with the `font-display` (DM Sans) class -- no cursive fonts anywhere.
-- Keep the subtitle but make it lighter and more spaced out.
-- Remove the "Tap to Scan Food or Barcode" text below the button entirely.
-- Increase vertical spacing around the button for a calming, airy feel.
+The page will use a forced dark background (`bg-[hsl(220,25%,8%)]`) with gold accent glows regardless of the app's theme setting.
 
-**Glassmorphism camera button:**
-- Replace the solid teal circle with a glassmorphic button: semi-transparent background (`bg-white/10 dark:bg-white/5`), `backdrop-blur-xl`, subtle border (`border border-white/20`), and a soft `shadow-[0_0_40px_rgba(45,180,160,0.3)]` teal glow.
-- Use a thin-stroke `Camera` icon (`strokeWidth={1.5}`) inside instead of the heavy default.
-- Outer ring uses the new `animate-breathing-glow` animation -- a ring that slowly pulses with a soft teal box-shadow.
+### 2. Add route in `src/App.tsx`
+- Import and add a new protected route: `/upgrade` pointing to the Upgrade page
+- Keep it inside `ProtectedRoute` so only authenticated users can access it
 
-**Recent Scans cards:**
-- Remove `border border-border`. Use `rounded-2xl` (pill-ish), `bg-white dark:bg-white/5`, and a soft diffused shadow (`shadow-[0_2px_12px_rgba(0,0,0,0.06)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.3)]`).
-- Replace the `Camera` icon on each card with contextual icons: `UtensilsCrossed` for food items and `ScanBarcode` for barcode items (or just use `UtensilsCrossed` for all recent scans since they're food results).
+### 3. Update all "Upgrade to Pro" triggers to use navigation
+Replace `setPaywallOpen(true)` and `onOpenPaywall()` calls with `navigate("/upgrade")`:
 
-### 3. No changes needed to:
-- The camera overlay modal (already dark/blurred and looks good).
-- The ScanResultCard (already polished).
-- The color system or index.css.
+- **`src/pages/Index.tsx`**:
+  - Remove `paywallOpen` state and `ProPaywall` component usage
+  - Change the header "Upgrade to Pro" button to navigate to `/upgrade`
+  - Pass `navigate("/upgrade")` as `onOpenPaywall` to `FoodScanner`
+  - Pass `navigate("/upgrade")` as `onUnlock` to `LockedCard` components
+
+- **`src/components/FoodScanner.tsx`**:
+  - No changes needed -- it already calls `onOpenPaywall` prop which will now navigate
+
+- **`src/pages/Settings.tsx`**:
+  - Change the "Upgrade to Pro" link to navigate to `/upgrade`
+
+### 4. Keep `ProPaywall.tsx` and `LockedCard.tsx`
+- `ProPaywall.tsx` can remain in the codebase but will no longer be actively used (or can be deleted for cleanliness)
+- `LockedCard.tsx` stays unchanged -- it still triggers `onUnlock` which now navigates
 
 ## Technical Details
 
+**Files created:**
+- `src/pages/Upgrade.tsx` -- full-page pricing with `handleCheckout` containing `// TODO: Insert Stripe Payment Link here`
+
 **Files modified:**
-- `tailwind.config.ts` -- add `breathing-glow` keyframe and animation
-- `src/components/FoodScanner.tsx` -- redesign the scanner home section (lines 55-97) with glassmorphism button, updated typography, floating recent scan cards, and new icon imports
+- `src/App.tsx` -- add `/upgrade` route (line 41, add new Route)
+- `src/pages/Index.tsx` -- remove `paywallOpen` state, remove `ProPaywall` import/usage, use `navigate("/upgrade")` everywhere
+- `src/pages/Settings.tsx` -- change upgrade link to `navigate("/upgrade")`
 
-**New icon imports:**
-- Add `UtensilsCrossed` from `lucide-react`
+**Checkout function shape:**
+```typescript
+const handleCheckout = async () => {
+  setLoading(true);
+  try {
+    // TODO: Insert Stripe Payment Link here
+    // Example: window.location.href = "https://buy.stripe.com/your-link";
+  } finally {
+    setLoading(false);
+  }
+};
+```
 
-**New keyframe in tailwind.config.ts:**
-```
-"breathing-glow": {
-  "0%, 100%": { transform: "scale(1)", opacity: "0.4" },
-  "50%": { transform: "scale(1.15)", opacity: "0.8" },
-}
-```
-Animation: `"breathing-glow": "breathing-glow 3s ease-in-out infinite"`
+**Mock testimonials data:**
+3 entries with name, quote, and transformation result (e.g., "Lost 12kg in 8 months", "Hit my goal weight in 6 months", "Best investment in my health").
+
