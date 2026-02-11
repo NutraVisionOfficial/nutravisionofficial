@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Plus, Activity } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Plus, Activity, Moon, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { StatCard } from "@/components/StatCard";
 import { CalorieSummary } from "@/components/CalorieSummary";
@@ -11,9 +11,14 @@ import { mockUser, getTodayLog, getStreak, getWeeklyAvg } from "@/data/mockData"
 
 const Index = () => {
   const [logOpen, setLogOpen] = useState(false);
+  const [dark, setDark] = useState(() => document.documentElement.classList.contains("dark"));
   const today = getTodayLog();
   const streak = getStreak();
   const weekAvg = getWeeklyAvg();
+
+  useEffect(() => {
+    document.documentElement.classList.toggle("dark", dark);
+  }, [dark]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -29,9 +34,14 @@ const Index = () => {
               <p className="text-xs text-muted-foreground">Your long-term fitness companion</p>
             </div>
           </div>
-          <Button onClick={() => setLogOpen(true)} size="sm">
-            <Plus className="w-4 h-4 mr-1" /> Log Today
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="icon" onClick={() => setDark(!dark)} aria-label="Toggle dark mode">
+              {dark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+            </Button>
+            <Button onClick={() => setLogOpen(true)} size="sm">
+              <Plus className="w-4 h-4 mr-1" /> Log Today
+            </Button>
+          </div>
         </div>
       </header>
 
