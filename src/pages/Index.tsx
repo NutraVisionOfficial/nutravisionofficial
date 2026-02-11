@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Plus, Activity, Moon, Sun } from "lucide-react";
+import { Plus, Activity, Moon, Sun, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { StatCard } from "@/components/StatCard";
 import { CalorieSummary } from "@/components/CalorieSummary";
@@ -7,22 +7,47 @@ import { MilestoneTracker } from "@/components/MilestoneTracker";
 import { WeeklyChart } from "@/components/WeeklyChart";
 import { MacroChart } from "@/components/MacroChart";
 import { DailyLogForm } from "@/components/DailyLogForm";
-import { mockUser, getTodayLog, getStreak, getWeeklyAvg } from "@/data/mockData";
+import { useAuth } from "@/hooks/useAuth";
+import { useProfile } from "@/hooks/useProfile";
+import { useTodayLog, useStreak, useDailyLogs } from "@/hooks/useDailyLogs";
 
 const Index = () => {
   const [logOpen, setLogOpen] = useState(false);
   const [dark, setDark] = useState(() => document.documentElement.classList.contains("dark"));
-  const today = getTodayLog();
-  const streak = getStreak();
-  const weekAvg = getWeeklyAvg();
+  const { signOut } = useAuth();
+  const { data: profile } = useProfile();
+  const { data: todayLog } = useTodayLog();
+  const { data: streak } = useStreak();
+  const { data: recentLogs } = useDailyLogs(30);
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", dark);
   }, [dark]);
 
+  const today = {
+    totalCalories: todayLog?.total_calories ?? 0,
+    protein: todayLog?.protein ?? 0,
+    carbs: todayLog?.carbs ?? 0,
+    fats: todayLog?.fats ?? 0,
+    workoutType: todayLog?.workout_type ?? "Rest",
+    workoutDurationMins: todayLog?.workout_duration_mins ?? 0,
+  };
+
+  const weekLogs = (recentLogs || []).slice(-7);
+  const weekAvg = weekLogs.length > 0
+    ? {
+        calories: Math.round(weekLogs.reduce((s, l) => s + l.total_calories, 0) / weekLogs.length),
+        protein: Math.round(weekLogs.reduce((s, l) => s + l.protein, 0) / weekLogs.length),
+        weight: Math.round((weekLogs.reduce((s, l) => s + Number(l.current_weight || 0), 0) / weekLogs.length) * 10) / 10,
+      }
+    : { calories: 0, protein: 0, weight: 0 };
+
+  const progress = profile
+    ? Math.round(((Number(profile.starting_weight) - Number(profile.current_weight)) / (Number(profile.starting_weight) - Number(profile.goal_weight))) * 100)
+    : 0;
+
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
       <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-40">
         <div className="container max-w-6xl mx-auto flex items-center justify-between px-4 py-4">
           <div className="flex items-center gap-3">
@@ -38,6 +63,9 @@ const Index = () => {
             <Button variant="ghost" size="icon" onClick={() => setDark(!dark)} aria-label="Toggle dark mode">
               {dark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
             </Button>
+            <Button variant="ghost" size="icon" onClick={signOut} aria-label="Sign out">
+              <LogOut className="w-5 h-5" />
+            </Button>
             <Button onClick={() => setLogOpen(true)} size="sm">
               <Plus className="w-4 h-4 mr-1" /> Log Today
             </Button>
@@ -46,37 +74,32 @@ const Index = () => {
       </header>
 
       <main className="container max-w-6xl mx-auto px-4 py-6 space-y-6">
-        {/* Greeting */}
         <div>
           <h2 className="text-2xl font-bold font-display text-foreground">
-            Hey {mockUser.name} 👋
+            Hey {profile?.name || "there"} 👋
           </h2>
           <p className="text-muted-foreground text-sm mt-1">
-            You're {Math.round(((mockUser.startingWeight - mockUser.currentWeight) / (mockUser.startingWeight - mockUser.goalWeight)) * 100)}% closer to your goal. Keep going!
+            {progress > 0 ? `You're ${Math.min(100, progress)}% closer to your goal. Keep going!` : "Start logging to track your progress!"}
           </p>
         </div>
 
-        {/* Stat cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard label="Today's Calories" value={today.totalCalories} subtitle={`Target: ${mockUser.dailyCalorieTarget}`} icon="flame" />
-          <StatCard label="Current Weight" value={`${mockUser.currentWeight}kg`} subtitle={`Goal: ${mockUser.goalWeight}kg`} icon="weight" />
+          <StatCard label="Today's Calories" value={today.totalCalories} subtitle={`Target: ${profile?.daily_calorie_target ?? 2000}`} icon="flame" />
+          <StatCard label="Current Weight" value={`${profile?.current_weight ?? 0}kg`} subtitle={`Goal: ${profile?.goal_weight ?? 0}kg`} icon="weight" />
           <StatCard label="Today's Workout" value={today.workoutType} subtitle={today.workoutDurationMins > 0 ? `${today.workoutDurationMins} min` : "Rest day"} icon="workout" />
-          <StatCard label="Active Streak" value={`${streak} days`} subtitle="Keep it up!" icon="streak" variant="accent" />
+          <StatCard label="Active Streak" value={`${streak ?? 0} days`} subtitle="Keep it up!" icon="streak" variant="accent" />
         </div>
 
-        {/* Calorie ring + Milestone */}
         <div className="grid lg:grid-cols-2 gap-6">
-          <CalorieSummary />
-          <MilestoneTracker />
+          <CalorieSummary todayLog={todayLog} target={profile?.daily_calorie_target ?? 2000} />
+          <MilestoneTracker profile={profile} />
         </div>
 
-        {/* Charts */}
         <div className="grid lg:grid-cols-2 gap-6">
-          <WeeklyChart />
-          <MacroChart />
+          <WeeklyChart logs={recentLogs || []} />
+          <MacroChart logs={(recentLogs || []).slice(-7)} />
         </div>
 
-        {/* Weekly summary */}
         <div className="rounded-xl border border-border bg-card p-6 animate-fade-in">
           <h3 className="text-lg font-semibold font-display text-card-foreground mb-3">Weekly Averages</h3>
           <div className="grid grid-cols-3 gap-4 text-center">

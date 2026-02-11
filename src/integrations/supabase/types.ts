@@ -14,7 +14,93 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      daily_logs: {
+        Row: {
+          carbs: number
+          created_at: string
+          current_weight: number | null
+          date: string
+          fats: number
+          id: string
+          protein: number
+          total_calories: number
+          updated_at: string
+          user_id: string
+          workout_duration_mins: number
+          workout_type: string
+        }
+        Insert: {
+          carbs?: number
+          created_at?: string
+          current_weight?: number | null
+          date?: string
+          fats?: number
+          id?: string
+          protein?: number
+          total_calories?: number
+          updated_at?: string
+          user_id: string
+          workout_duration_mins?: number
+          workout_type?: string
+        }
+        Update: {
+          carbs?: number
+          created_at?: string
+          current_weight?: number | null
+          date?: string
+          fats?: number
+          id?: string
+          protein?: number
+          total_calories?: number
+          updated_at?: string
+          user_id?: string
+          workout_duration_mins?: number
+          workout_type?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          current_weight: number
+          daily_calorie_target: number
+          goal_timeframe_months: number
+          goal_weight: number
+          id: string
+          name: string
+          start_date: string
+          starting_weight: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_weight?: number
+          daily_calorie_target?: number
+          goal_timeframe_months?: number
+          goal_weight?: number
+          id?: string
+          name?: string
+          start_date?: string
+          starting_weight?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_weight?: number
+          daily_calorie_target?: number
+          goal_timeframe_months?: number
+          goal_weight?: number
+          id?: string
+          name?: string
+          start_date?: string
+          starting_weight?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
