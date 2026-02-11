@@ -4,6 +4,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, X } from "lucide-react";
+import { useUpsertLog } from "@/hooks/useDailyLogs";
+import { useToast } from "@/hooks/use-toast";
 
 interface DailyLogFormProps {
   open: boolean;
@@ -18,13 +20,28 @@ export function DailyLogForm({ open, onClose }: DailyLogFormProps) {
   const [workout, setWorkout] = useState("");
   const [duration, setDuration] = useState("");
   const [weight, setWeight] = useState("");
+  const upsertLog = useUpsertLog();
+  const { toast } = useToast();
 
   if (!open) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // In MVP, just close. Data would be saved to DB in production.
-    onClose();
+    try {
+      await upsertLog.mutateAsync({
+        total_calories: parseInt(calories) || 0,
+        protein: parseInt(protein) || 0,
+        carbs: parseInt(carbs) || 0,
+        fats: parseInt(fats) || 0,
+        workout_type: workout || "Rest",
+        workout_duration_mins: parseInt(duration) || 0,
+        current_weight: weight ? parseFloat(weight) : undefined,
+      });
+      toast({ title: "Saved!", description: "Your daily log has been recorded." });
+      onClose();
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    }
   };
 
   return (
@@ -36,7 +53,6 @@ export function DailyLogForm({ open, onClose }: DailyLogFormProps) {
             <X className="w-5 h-5" />
           </button>
         </div>
-
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <Label className="text-sm font-medium text-card-foreground">Nutrition</Label>
@@ -47,14 +63,11 @@ export function DailyLogForm({ open, onClose }: DailyLogFormProps) {
               <Input placeholder="Fats (g)" type="number" value={fats} onChange={(e) => setFats(e.target.value)} />
             </div>
           </div>
-
           <div>
             <Label className="text-sm font-medium text-card-foreground">Workout</Label>
             <div className="grid grid-cols-2 gap-3 mt-2">
               <Select value={workout} onValueChange={setWorkout}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Type" />
-                </SelectTrigger>
+                <SelectTrigger><SelectValue placeholder="Type" /></SelectTrigger>
                 <SelectContent>
                   {["Running", "Weight Training", "Yoga", "Cycling", "Swimming", "HIIT", "Rest"].map((t) => (
                     <SelectItem key={t} value={t}>{t}</SelectItem>
@@ -64,14 +77,12 @@ export function DailyLogForm({ open, onClose }: DailyLogFormProps) {
               <Input placeholder="Duration (min)" type="number" value={duration} onChange={(e) => setDuration(e.target.value)} />
             </div>
           </div>
-
           <div>
             <Label className="text-sm font-medium text-card-foreground">Weight</Label>
             <Input placeholder="Current weight (kg)" type="number" step="0.1" value={weight} onChange={(e) => setWeight(e.target.value)} className="mt-2" />
           </div>
-
-          <Button type="submit" className="w-full mt-2">
-            <Plus className="w-4 h-4 mr-2" /> Save Entry
+          <Button type="submit" className="w-full mt-2" disabled={upsertLog.isPending}>
+            <Plus className="w-4 h-4 mr-2" /> {upsertLog.isPending ? "Saving..." : "Save Entry"}
           </Button>
         </form>
       </div>
