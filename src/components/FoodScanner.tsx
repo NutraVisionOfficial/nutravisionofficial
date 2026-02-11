@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Camera, ScanBarcode, X, Sparkles, Lock } from "lucide-react";
+import { Camera, ScanBarcode, UtensilsCrossed, X, Sparkles, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface ScannerResultData {
@@ -55,41 +55,37 @@ export function FoodScanner({ onOpenPaywall }: FoodScannerProps) {
   return (
     <>
       {/* Scanner home */}
-      <div className="flex flex-col items-center justify-center min-h-[60vh] px-4 text-center space-y-8 animate-fade-in">
-        <div className="space-y-2">
-          <h2 className="text-3xl font-bold font-display text-foreground">
+      <div className="flex flex-col items-center justify-center min-h-[60vh] px-4 text-center space-y-12 animate-fade-in">
+        <div className="space-y-3">
+          <h2 className="text-4xl font-extrabold tracking-tight font-display text-foreground">
             Smart Scanner
           </h2>
-          <p className="text-muted-foreground text-sm max-w-xs mx-auto">
-            Instantly analyze any food or scan a barcode to get nutrition info
+          <p className="text-muted-foreground text-sm max-w-xs mx-auto tracking-wide">
+            Instantly analyze any food or scan a barcode
           </p>
         </div>
 
-        {/* Pulsating camera button */}
+        {/* Glassmorphism camera button */}
         <button
           onClick={() => setCameraOpen(true)}
-          className="relative group"
+          className="relative group mt-4"
         >
-          {/* outer pulse rings */}
-          <div className="absolute inset-0 rounded-full bg-primary/20 animate-ping" style={{ animationDuration: "2s" }} />
-          <div className="absolute -inset-3 rounded-full bg-primary/10 animate-pulse-soft" />
-          {/* main button */}
-          <div className="relative w-36 h-36 rounded-full bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-xl shadow-primary/25 transition-transform group-hover:scale-105 group-active:scale-95">
-            <Camera className="w-14 h-14 text-primary-foreground" />
+          {/* breathing glow ring */}
+          <div className="absolute -inset-4 rounded-full border border-primary/30 shadow-[0_0_30px_rgba(45,180,160,0.25)] animate-breathing-glow" />
+          {/* main glassmorphic button */}
+          <div className="relative w-36 h-36 rounded-full bg-white/10 dark:bg-white/5 backdrop-blur-xl border border-white/20 shadow-[0_0_40px_rgba(45,180,160,0.3)] flex items-center justify-center transition-transform group-hover:scale-105 group-active:scale-95">
+            <Camera className="w-14 h-14 text-primary" strokeWidth={1.5} />
           </div>
         </button>
-        <p className="text-sm font-medium text-muted-foreground">
-          Tap to Scan Food or Barcode
-        </p>
 
-        {/* recent scans placeholder */}
+        {/* recent scans */}
         <div className="w-full max-w-sm space-y-3 pt-4">
           <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Recent Scans</p>
           <div className="space-y-2">
             {["Grilled Chicken Salad — 380 kcal", "Protein Smoothie — 220 kcal"].map((item) => (
-              <div key={item} className="flex items-center justify-between p-3 rounded-lg bg-card border border-border">
+              <div key={item} className="flex items-center justify-between p-3.5 rounded-2xl bg-white dark:bg-white/5 shadow-[0_2px_12px_rgba(0,0,0,0.06)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.3)]">
                 <span className="text-sm text-foreground">{item}</span>
-                <Camera className="w-4 h-4 text-muted-foreground" />
+                <UtensilsCrossed className="w-4 h-4 text-muted-foreground" strokeWidth={1.5} />
               </div>
             ))}
           </div>
