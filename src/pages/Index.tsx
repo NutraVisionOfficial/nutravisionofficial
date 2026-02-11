@@ -17,6 +17,7 @@ import { MacroChart } from "@/components/MacroChart";
 import { DailyLogForm } from "@/components/DailyLogForm";
 import { ProPaywall } from "@/components/ProPaywall";
 import { LockedCard } from "@/components/LockedCard";
+import { FoodScanner } from "@/components/FoodScanner";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { useNavigate } from "react-router-dom";
@@ -25,6 +26,7 @@ import { useTodayLog, useStreak, useDailyLogs } from "@/hooks/useDailyLogs";
 const Index = () => {
   const [logOpen, setLogOpen] = useState(false);
   const [paywallOpen, setPaywallOpen] = useState(false);
+  const [isPro] = useState(false); // free tier by default
   const [dark, setDark] = useState(() => document.documentElement.classList.contains("dark"));
   const { signOut } = useAuth();
   const { data: profile } = useProfile();
@@ -83,9 +85,11 @@ const Index = () => {
             >
               <Sparkles className="w-4 h-4 mr-1" /> Upgrade to Pro
             </Button>
-            <Button onClick={() => setLogOpen(true)} size="sm">
-              <Plus className="w-4 h-4 mr-1" /> Log Today
-            </Button>
+            {isPro && (
+              <Button onClick={() => setLogOpen(true)} size="sm">
+                <Plus className="w-4 h-4 mr-1" /> Log Today
+              </Button>
+            )}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button className="w-9 h-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
@@ -114,83 +118,89 @@ const Index = () => {
       </header>
 
       <main className="container max-w-6xl mx-auto px-4 py-6 space-y-6">
-        <div>
-          <h2 className="text-2xl font-bold font-display text-foreground">
-            Hey {profile?.name || "there"} 👋
-          </h2>
-          <p className="text-muted-foreground text-sm mt-1">
-            {progress > 0 ? `You're ${Math.min(100, progress)}% closer to your goal. Keep going!` : "Start logging to track your progress!"}
-          </p>
-        </div>
+        {isPro ? (
+          <>
+            <div>
+              <h2 className="text-2xl font-bold font-display text-foreground">
+                Hey {profile?.name || "there"} 👋
+              </h2>
+              <p className="text-muted-foreground text-sm mt-1">
+                {progress > 0 ? `You're ${Math.min(100, progress)}% closer to your goal. Keep going!` : "Start logging to track your progress!"}
+              </p>
+            </div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard label="Today's Calories" value={today.totalCalories} subtitle={`Target: ${profile?.daily_calorie_target ?? 2000}`} icon="flame" />
-          <StatCard label="Current Weight" value={`${profile?.current_weight ?? 0}kg`} subtitle={`Goal: ${profile?.goal_weight ?? 0}kg`} icon="weight" />
-          <StatCard label="Today's Workout" value={today.workoutType} subtitle={today.workoutDurationMins > 0 ? `${today.workoutDurationMins} min` : "Rest day"} icon="workout" />
-          <StatCard label="Active Streak" value={`${streak ?? 0} days`} subtitle="Keep it up!" icon="streak" variant="accent" />
-        </div>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              <StatCard label="Today's Calories" value={today.totalCalories} subtitle={`Target: ${profile?.daily_calorie_target ?? 2000}`} icon="flame" />
+              <StatCard label="Current Weight" value={`${profile?.current_weight ?? 0}kg`} subtitle={`Goal: ${profile?.goal_weight ?? 0}kg`} icon="weight" />
+              <StatCard label="Today's Workout" value={today.workoutType} subtitle={today.workoutDurationMins > 0 ? `${today.workoutDurationMins} min` : "Rest day"} icon="workout" />
+              <StatCard label="Active Streak" value={`${streak ?? 0} days`} subtitle="Keep it up!" icon="streak" variant="accent" />
+            </div>
 
-        <div className="grid lg:grid-cols-2 gap-6">
-          <CalorieSummary todayLog={todayLog} target={profile?.daily_calorie_target ?? 2000} />
-          <MilestoneTracker profile={profile} />
-        </div>
+            <div className="grid lg:grid-cols-2 gap-6">
+              <CalorieSummary todayLog={todayLog} target={profile?.daily_calorie_target ?? 2000} />
+              <MilestoneTracker profile={profile} />
+            </div>
 
-        <div className="grid lg:grid-cols-2 gap-6">
-          <WeeklyChart logs={recentLogs || []} />
-          <MacroChart logs={(recentLogs || []).slice(-7)} />
-        </div>
+            <div className="grid lg:grid-cols-2 gap-6">
+              <WeeklyChart logs={recentLogs || []} />
+              <MacroChart logs={(recentLogs || []).slice(-7)} />
+            </div>
 
-        <div className="grid lg:grid-cols-2 gap-6">
-          <LockedCard
-            title="Macro Cycling Scheduler"
-            description="AI-optimized carb & fat cycling for accelerated results"
-            onUnlock={() => setPaywallOpen(true)}
-          >
-            <div className="space-y-3">
-              {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((d) => (
-                <div key={d} className="flex justify-between items-center">
-                  <span className="text-sm font-medium text-foreground">{d}</span>
-                  <div className="flex gap-2">
-                    <span className="px-2 py-1 text-xs rounded bg-primary/20 text-primary">High Carb</span>
-                    <span className="px-2 py-1 text-xs rounded bg-accent/20 text-accent">Low Fat</span>
+            <div className="grid lg:grid-cols-2 gap-6">
+              <LockedCard
+                title="Macro Cycling Scheduler"
+                description="AI-optimized carb & fat cycling for accelerated results"
+                onUnlock={() => setPaywallOpen(true)}
+              >
+                <div className="space-y-3">
+                  {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((d) => (
+                    <div key={d} className="flex justify-between items-center">
+                      <span className="text-sm font-medium text-foreground">{d}</span>
+                      <div className="flex gap-2">
+                        <span className="px-2 py-1 text-xs rounded bg-primary/20 text-primary">High Carb</span>
+                        <span className="px-2 py-1 text-xs rounded bg-accent/20 text-accent">Low Fat</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </LockedCard>
+              <LockedCard
+                title="Recovery & Sleep Insights"
+                description="Track sleep quality, HRV, and recovery readiness"
+                onUnlock={() => setPaywallOpen(true)}
+              >
+                <div className="space-y-3">
+                  <div className="h-32 bg-muted/40 rounded-lg" />
+                  <div className="grid grid-cols-3 gap-3">
+                    <div className="h-16 bg-muted/40 rounded-lg" />
+                    <div className="h-16 bg-muted/40 rounded-lg" />
+                    <div className="h-16 bg-muted/40 rounded-lg" />
                   </div>
                 </div>
-              ))}
+              </LockedCard>
             </div>
-          </LockedCard>
-          <LockedCard
-            title="Recovery & Sleep Insights"
-            description="Track sleep quality, HRV, and recovery readiness"
-            onUnlock={() => setPaywallOpen(true)}
-          >
-            <div className="space-y-3">
-              <div className="h-32 bg-muted/40 rounded-lg" />
-              <div className="grid grid-cols-3 gap-3">
-                <div className="h-16 bg-muted/40 rounded-lg" />
-                <div className="h-16 bg-muted/40 rounded-lg" />
-                <div className="h-16 bg-muted/40 rounded-lg" />
+
+            <div className="rounded-xl border border-border bg-card p-6 animate-fade-in">
+              <h3 className="text-lg font-semibold font-display text-card-foreground mb-3">Weekly Averages</h3>
+              <div className="grid grid-cols-3 gap-4 text-center">
+                <div>
+                  <p className="text-2xl font-bold font-display text-primary">{weekAvg.calories}</p>
+                  <p className="text-xs text-muted-foreground mt-1">Avg Calories</p>
+                </div>
+                <div>
+                  <p className="text-2xl font-bold font-display text-accent">{weekAvg.protein}g</p>
+                  <p className="text-xs text-muted-foreground mt-1">Avg Protein</p>
+                </div>
+                <div>
+                  <p className="text-2xl font-bold font-display text-foreground">{weekAvg.weight}kg</p>
+                  <p className="text-xs text-muted-foreground mt-1">Avg Weight</p>
+                </div>
               </div>
             </div>
-          </LockedCard>
-        </div>
-
-        <div className="rounded-xl border border-border bg-card p-6 animate-fade-in">
-          <h3 className="text-lg font-semibold font-display text-card-foreground mb-3">Weekly Averages</h3>
-          <div className="grid grid-cols-3 gap-4 text-center">
-            <div>
-              <p className="text-2xl font-bold font-display text-primary">{weekAvg.calories}</p>
-              <p className="text-xs text-muted-foreground mt-1">Avg Calories</p>
-            </div>
-            <div>
-              <p className="text-2xl font-bold font-display text-accent">{weekAvg.protein}g</p>
-              <p className="text-xs text-muted-foreground mt-1">Avg Protein</p>
-            </div>
-            <div>
-              <p className="text-2xl font-bold font-display text-foreground">{weekAvg.weight}kg</p>
-              <p className="text-xs text-muted-foreground mt-1">Avg Weight</p>
-            </div>
-          </div>
-        </div>
+          </>
+        ) : (
+          <FoodScanner onOpenPaywall={() => setPaywallOpen(true)} />
+        )}
       </main>
 
       <DailyLogForm open={logOpen} onClose={() => setLogOpen(false)} />
