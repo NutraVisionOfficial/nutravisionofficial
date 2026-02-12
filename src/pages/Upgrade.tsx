@@ -53,8 +53,10 @@ export default function Upgrade() {
   const handleCheckout = async () => {
     setLoading(true);
     try {
-      // TODO: Insert Stripe Payment Link here
-      // Example: window.location.href = "https://buy.stripe.com/your-link";
+      // TODO: Replace with your Stripe Payment Link
+      // window.location.href = "https://buy.stripe.com/your-link";
+      // For now, simulate success:
+      navigate("/payment-success");
     } finally {
       setLoading(false);
     }

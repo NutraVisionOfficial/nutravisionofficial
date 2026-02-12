@@ -24,10 +24,10 @@ import { useTodayLog, useStreak, useDailyLogs } from "@/hooks/useDailyLogs";
 
 const Index = () => {
   const [logOpen, setLogOpen] = useState(false);
-  const [isPro] = useState(false); // free tier by default
   const [dark, setDark] = useState(() => document.documentElement.classList.contains("dark"));
   const { signOut } = useAuth();
   const { data: profile } = useProfile();
+  const isPro = (profile as any)?.subscription_status === "pro";
   const navigate = useNavigate();
   const { data: todayLog } = useTodayLog();
   const { data: streak } = useStreak();
