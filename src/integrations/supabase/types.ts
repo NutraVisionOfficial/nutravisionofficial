@@ -59,14 +59,45 @@ export type Database = {
         }
         Relationships: []
       }
+      meal_plans: {
+        Row: {
+          created_at: string
+          id: string
+          plan_data: Json
+          updated_at: string
+          user_id: string
+          week_start: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          plan_data?: Json
+          updated_at?: string
+          user_id: string
+          week_start: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          plan_data?: Json
+          updated_at?: string
+          user_id?: string
+          week_start?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
+          allergies: string[]
+          cooking_time: string
           created_at: string
           current_weight: number
           daily_calorie_target: number
+          diet_type: string
           goal_timeframe_months: number
           goal_weight: number
           id: string
+          meals_per_day: string
           name: string
           start_date: string
           starting_weight: number
@@ -75,12 +106,16 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          allergies?: string[]
+          cooking_time?: string
           created_at?: string
           current_weight?: number
           daily_calorie_target?: number
+          diet_type?: string
           goal_timeframe_months?: number
           goal_weight?: number
           id?: string
+          meals_per_day?: string
           name?: string
           start_date?: string
           starting_weight?: number
@@ -89,12 +124,16 @@ export type Database = {
           user_id: string
         }
         Update: {
+          allergies?: string[]
+          cooking_time?: string
           created_at?: string
           current_weight?: number
           daily_calorie_target?: number
+          diet_type?: string
           goal_timeframe_months?: number
           goal_weight?: number
           id?: string
+          meals_per_day?: string
           name?: string
           start_date?: string
           starting_weight?: number
