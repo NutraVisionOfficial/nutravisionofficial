@@ -112,6 +112,12 @@ export default function Onboarding() {
         <Button size="lg" className="px-8" onClick={() => setPhase("questions")}>
           Get Started <ArrowRight className="w-4 h-4 ml-2" />
         </Button>
+        <p className="text-sm text-muted-foreground mt-4">
+          Already have an account?{" "}
+          <button onClick={() => navigate("/auth")} className="text-primary font-medium hover:underline">
+            Log In
+          </button>
+        </p>
       </div>
     );
   }
