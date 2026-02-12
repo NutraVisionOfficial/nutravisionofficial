@@ -1,19 +1,12 @@
 import { useState, useCallback, useRef, useEffect } from "react";
-import { Camera, ScanBarcode, UtensilsCrossed, X, Sparkles, Lock, Loader2, ImagePlus } from "lucide-react";
+import { Camera, ScanBarcode, X, Sparkles, Lock, Loader2, ImagePlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useBarcodeScanner } from "@/hooks/useBarcodeScanner";
+import { FoodResultCard } from "@/components/FoodResultCard";
 import { fetchProductByBarcode, type FoodProduct } from "@/lib/openFoodFacts";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
-const NUTRI_COLORS: Record<string, string> = {
-  A: "bg-[hsl(152,60%,42%)]",
-  B: "bg-[hsl(80,55%,50%)]",
-  C: "bg-[hsl(43,96%,56%)]",
-  D: "bg-[hsl(24,90%,55%)]",
-  E: "bg-[hsl(0,72%,55%)]",
-  unknown: "bg-muted",
-};
 
 interface FoodScannerProps {
   onOpenPaywall: () => void;
@@ -211,14 +204,7 @@ export function FoodScanner({ onOpenPaywall }: FoodScannerProps) {
             <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Recent Scans</p>
             <div className="space-y-2">
               {recentScans.map((scan, i) => (
-                <div key={scan.barcode + i} className="flex items-center gap-3 p-3.5 rounded-2xl bg-white dark:bg-white/5 shadow-[0_2px_12px_rgba(0,0,0,0.06)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.3)]">
-                  {scan.imageUrl && <img src={scan.imageUrl} alt={scan.name} className="w-10 h-10 rounded-lg object-cover flex-shrink-0" />}
-                  <div className="flex-1 min-w-0 text-left">
-                    <p className="text-sm font-medium text-foreground truncate">{scan.name}</p>
-                    <p className="text-xs text-muted-foreground">{scan.calories} kcal · P{scan.protein}g · C{scan.carbs}g · F{scan.fats}g</p>
-                  </div>
-                  <UtensilsCrossed className="w-4 h-4 text-muted-foreground flex-shrink-0" strokeWidth={1.5} />
-                </div>
+                <FoodResultCard key={scan.barcode + i} product={scan} />
               ))}
             </div>
           </div>
@@ -246,8 +232,17 @@ export function FoodScanner({ onOpenPaywall }: FoodScannerProps) {
           {/* viewfinder area */}
           <div className="flex-1 flex items-center justify-center relative">
             {result ? (
-              <div className="px-8 w-full flex justify-center">
-                <ScanResultCard result={result} onOpenPaywall={onOpenPaywall} onScanAgain={handleScanAgain} />
+              <div className="px-6 w-full flex justify-center">
+                <div className="w-full max-w-sm space-y-3">
+                  <FoodResultCard product={result} overlay />
+                  <div className="flex gap-2">
+                    <Button onClick={onOpenPaywall} className="flex-1 bg-gold text-gold-foreground hover:bg-gold/90 text-xs">
+                      <Sparkles className="w-3.5 h-3.5 mr-1.5" /> Save & Track
+                      <Lock className="w-3 h-3 ml-1.5 opacity-60" />
+                    </Button>
+                    <Button onClick={handleScanAgain} variant="outline" className="flex-1 text-xs">Scan Another</Button>
+                  </div>
+                </div>
               </div>
             ) : fetching ? (
               <div className="flex flex-col items-center gap-4">
@@ -347,82 +342,3 @@ export function FoodScanner({ onOpenPaywall }: FoodScannerProps) {
   );
 }
 
-function ScanResultCard({
-  result,
-  onOpenPaywall,
-  onScanAgain,
-}: {
-  result: FoodProduct;
-  onOpenPaywall: () => void;
-  onScanAgain: () => void;
-}) {
-  return (
-    <div className="w-full max-w-sm rounded-2xl bg-card border border-border shadow-2xl overflow-hidden animate-scale-in">
-      <div className="p-6 space-y-5">
-        <div className="flex items-start justify-between">
-          <div className="flex items-start gap-3">
-            {result.imageUrl && <img src={result.imageUrl} alt={result.name} className="w-12 h-12 rounded-lg object-cover" />}
-            <div>
-              <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Detected</p>
-              <h3 className="text-lg font-bold font-display text-card-foreground mt-1">{result.name}</h3>
-            </div>
-          </div>
-          {result.nutriScore !== "unknown" && (
-            <div className={`w-10 h-10 rounded-lg ${NUTRI_COLORS[result.nutriScore]} flex items-center justify-center`}>
-              <span className="text-white font-extrabold text-lg">{result.nutriScore}</span>
-            </div>
-          )}
-        </div>
-
-        <div className="text-center py-2">
-          <p className="text-5xl font-extrabold font-display text-primary">{result.calories}</p>
-          <p className="text-sm text-muted-foreground mt-1">Calories</p>
-        </div>
-
-        <div className="grid grid-cols-3 gap-3">
-          <MacroBlock label="Protein" value={`${result.protein}g`} color="bg-primary/15 text-primary" />
-          <MacroBlock label="Carbs" value={`${result.carbs}g`} color="bg-accent/15 text-accent" />
-          <MacroBlock label="Fats" value={`${result.fats}g`} color="bg-[hsl(200,70%,50%)]/15 text-[hsl(200,70%,50%)]" />
-        </div>
-
-        {result.nutriScore !== "unknown" && (
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <span>Nutri-Score:</span>
-            <div className="flex gap-1">
-              {(["A", "B", "C", "D", "E"] as const).map((g) => (
-                <div key={g} className={`w-6 h-6 rounded text-[10px] font-bold flex items-center justify-center ${g === result.nutriScore ? `${NUTRI_COLORS[g]} text-white` : "bg-muted text-muted-foreground/40"}`}>
-                  {g}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        <Button onClick={onScanAgain} className="w-full" variant="outline">Scan Another</Button>
-      </div>
-
-      <button
-        onClick={onOpenPaywall}
-        className="w-full px-6 py-4 bg-gold/10 border-t border-gold/20 flex items-center gap-3 hover:bg-gold/15 transition-colors text-left"
-      >
-        <div className="w-8 h-8 rounded-full bg-gold/20 flex items-center justify-center flex-shrink-0">
-          <Sparkles className="w-4 h-4 text-gold" />
-        </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-xs font-semibold text-foreground">Save & track this meal?</p>
-          <p className="text-[11px] text-muted-foreground mt-0.5">Unlock the 3-Year Transformation Dashboard with Pro.</p>
-        </div>
-        <Lock className="w-4 h-4 text-gold flex-shrink-0" />
-      </button>
-    </div>
-  );
-}
-
-function MacroBlock({ label, value, color }: { label: string; value: string; color: string }) {
-  return (
-    <div className={`rounded-lg p-3 text-center ${color}`}>
-      <p className="text-lg font-bold font-display">{value}</p>
-      <p className="text-[10px] font-medium mt-0.5 opacity-70">{label}</p>
-    </div>
-  );
-}
