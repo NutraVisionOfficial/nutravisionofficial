@@ -100,6 +100,10 @@ export default {
           "0%, 100%": { transform: "scale(1)", opacity: "0.4" },
           "50%": { transform: "scale(1.15)", opacity: "0.8" },
         },
+        "scanner-line": {
+          "0%, 100%": { top: "8px", opacity: "0.4" },
+          "50%": { top: "calc(100% - 10px)", opacity: "0.9" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -108,6 +112,7 @@ export default {
         "scale-in": "scale-in 0.3s ease-out forwards",
         "pulse-soft": "pulse-soft 2s ease-in-out infinite",
         "breathing-glow": "breathing-glow 3s ease-in-out infinite",
+        "scanner-line": "scanner-line 2.5s ease-in-out infinite",
       },
     },
   },
