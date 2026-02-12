@@ -70,6 +70,7 @@ export type Database = {
           name: string
           start_date: string
           starting_weight: number
+          subscription_status: string
           updated_at: string
           user_id: string
         }
@@ -83,6 +84,7 @@ export type Database = {
           name?: string
           start_date?: string
           starting_weight?: number
+          subscription_status?: string
           updated_at?: string
           user_id: string
         }
@@ -96,6 +98,7 @@ export type Database = {
           name?: string
           start_date?: string
           starting_weight?: number
+          subscription_status?: string
           updated_at?: string
           user_id?: string
         }
