@@ -16,6 +16,7 @@ import { WeeklyChart } from "@/components/WeeklyChart";
 import { MacroChart } from "@/components/MacroChart";
 import { DailyLogForm } from "@/components/DailyLogForm";
 import { LockedCard } from "@/components/LockedCard";
+import { MealPlannerCard } from "@/components/MealPlannerCard";
 import { FoodScanner } from "@/components/FoodScanner";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
@@ -134,6 +135,8 @@ const Index = () => {
               <StatCard label="Active Streak" value={`${streak ?? 0} days`} subtitle="Keep it up!" icon="streak" variant="accent" />
             </div>
 
+            <MealPlannerCard isPro={isPro} />
+
             <div className="grid lg:grid-cols-2 gap-6">
               <CalorieSummary todayLog={todayLog} target={profile?.daily_calorie_target ?? 2000} />
               <MilestoneTracker profile={profile} />
@@ -197,7 +200,12 @@ const Index = () => {
             </div>
           </>
         ) : (
-          <FoodScanner onOpenPaywall={() => navigate("/upgrade")} />
+          <>
+            <FoodScanner onOpenPaywall={() => navigate("/upgrade")} />
+            <div className="mt-6">
+              <MealPlannerCard isPro={isPro} />
+            </div>
+          </>
         )}
       </main>
 
