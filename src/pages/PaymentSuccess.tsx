@@ -28,10 +28,8 @@ export default function PaymentSuccess() {
     if (!user || unlocked.current) return;
     unlocked.current = true;
 
-    supabase
-      .from("profiles")
-      .update({ subscription_status: "pro" } as any)
-      .eq("user_id", user.id)
+    supabase.functions
+      .invoke("update-subscription", { body: { status: "pro" } })
       .then(({ error }) => {
         if (error) {
           toast({ title: "Error unlocking Pro", description: error.message, variant: "destructive" });
