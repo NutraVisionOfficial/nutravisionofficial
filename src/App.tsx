@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
+import AppLayout from "@/components/AppLayout";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Onboarding from "./pages/Onboarding";
@@ -19,7 +20,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   if (loading) return <div className="min-h-screen bg-background flex items-center justify-center"><p className="text-muted-foreground">Loading...</p></div>;
   if (!user) return <Navigate to="/onboarding" replace />;
-  return <>{children}</>;
+  return <AppLayout>{children}</AppLayout>;
 }
 
 function PublicOnlyRoute({ children }: { children: React.ReactNode }) {
@@ -27,6 +28,17 @@ function PublicOnlyRoute({ children }: { children: React.ReactNode }) {
   if (loading) return null;
   if (user) return <Navigate to="/" replace />;
   return <>{children}</>;
+}
+
+// Placeholder pages for new nav tabs
+function ScanPage() {
+  return <div className="min-h-screen bg-background flex items-center justify-center"><p className="text-muted-foreground text-lg">Scan coming soon</p></div>;
+}
+function SearchPage() {
+  return <div className="min-h-screen bg-background flex items-center justify-center"><p className="text-muted-foreground text-lg">Search coming soon</p></div>;
+}
+function ProgressPage() {
+  return <div className="min-h-screen bg-background flex items-center justify-center"><p className="text-muted-foreground text-lg">Progress coming soon</p></div>;
 }
 
 const App = () => (
@@ -40,6 +52,9 @@ const App = () => (
             <Route path="/onboarding" element={<PublicOnlyRoute><Onboarding /></PublicOnlyRoute>} />
             <Route path="/auth" element={<PublicOnlyRoute><Auth /></PublicOnlyRoute>} />
             <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+            <Route path="/scan" element={<ProtectedRoute><ScanPage /></ProtectedRoute>} />
+            <Route path="/search" element={<ProtectedRoute><SearchPage /></ProtectedRoute>} />
+            <Route path="/progress" element={<ProtectedRoute><ProgressPage /></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
             <Route path="/upgrade" element={<ProtectedRoute><Upgrade /></ProtectedRoute>} />
             <Route path="/payment-success" element={<ProtectedRoute><PaymentSuccess /></ProtectedRoute>} />
