@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Activity, ArrowRight, Loader2 } from "lucide-react";
+import { Activity, ArrowRight, Loader2, ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
@@ -212,13 +212,24 @@ export default function Onboarding() {
   // Questions flow
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      {/* Progress bar */}
+      {/* Top bar with back button and progress */}
       <div className="p-4 pt-6">
         <div className="max-w-md mx-auto">
           <div className="flex items-center justify-between mb-2">
-            <button onClick={prevStep} className="text-sm text-muted-foreground hover:text-foreground transition-colors" disabled={step === 1}>
-              {step > 1 ? "← Back" : ""}
-            </button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-10 w-10 text-muted-foreground hover:text-foreground"
+              onClick={() => {
+                if (step === 1) {
+                  navigate("/");
+                } else {
+                  prevStep();
+                }
+              }}
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </Button>
             <span className="text-xs text-muted-foreground">Step {step} of {TOTAL_STEPS}</span>
           </div>
           <Progress value={(step / TOTAL_STEPS) * 100} className="h-2" />
