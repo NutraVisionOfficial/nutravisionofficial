@@ -12,6 +12,7 @@ import Settings from "./pages/Settings";
 import Upgrade from "./pages/Upgrade";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import MealPlanner from "./pages/MealPlanner";
+import Progress from "./pages/Progress";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -37,9 +38,6 @@ function ScanPage() {
 function SearchPage() {
   return <div className="min-h-screen bg-background flex items-center justify-center"><p className="text-muted-foreground text-lg">Search coming soon</p></div>;
 }
-function ProgressPage() {
-  return <div className="min-h-screen bg-background flex items-center justify-center"><p className="text-muted-foreground text-lg">Progress coming soon</p></div>;
-}
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -54,7 +52,7 @@ const App = () => (
             <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
             <Route path="/scan" element={<ProtectedRoute><ScanPage /></ProtectedRoute>} />
             <Route path="/search" element={<ProtectedRoute><SearchPage /></ProtectedRoute>} />
-            <Route path="/progress" element={<ProtectedRoute><ProgressPage /></ProtectedRoute>} />
+            <Route path="/progress" element={<ProtectedRoute><Progress /></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
             <Route path="/upgrade" element={<ProtectedRoute><Upgrade /></ProtectedRoute>} />
             <Route path="/payment-success" element={<ProtectedRoute><PaymentSuccess /></ProtectedRoute>} />
