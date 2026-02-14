@@ -1,5 +1,5 @@
-import { useState, useCallback, useRef } from "react";
-import { Camera, ImagePlus, Loader2, ArrowLeft, Plus } from "lucide-react";
+import { useState, useCallback, useRef, useEffect } from "react";
+import { Camera, ImagePlus, Loader2, ArrowLeft, Plus, ShieldAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useTodayLog, useUpsertLog } from "@/hooks/useDailyLogs";
@@ -118,6 +118,7 @@ export default function Scan() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [cameraActive, setCameraActive] = useState(false);
+  const [cameraError, setCameraError] = useState<string | null>(null);
 
   const navigate = useNavigate();
   const { data: todayLog } = useTodayLog();
@@ -131,19 +132,28 @@ export default function Scan() {
   }, []);
 
   const startCamera = useCallback(async () => {
+    setCameraError(null);
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } },
+        video: { facingMode: "environment" },
       });
       streamRef.current = stream;
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
+        await videoRef.current.play();
       }
       setCameraActive(true);
-    } catch {
-      toast({ variant: "destructive", title: "Camera error", description: "Could not access camera." });
+    } catch (err: any) {
+      if (err?.name === "NotAllowedError") {
+        setCameraError("Camera access denied. Please allow camera permissions in your browser settings.");
+      } else if (err?.name === "NotFoundError") {
+        setCameraError("No camera found on this device. Try uploading from gallery instead.");
+      } else {
+        setCameraError("Could not access camera. Try uploading from gallery instead.");
+      }
+      toast({ variant: "destructive", title: "Camera error", description: cameraError || "Could not access camera." });
     }
-  }, []);
+  }, [cameraError]);
 
   const analyzeImage = useCallback(async (imageBase64: string) => {
     setAnalyzing(true);
@@ -175,13 +185,14 @@ export default function Scan() {
   const handleCapture = useCallback(() => {
     const video = videoRef.current;
     const canvas = canvasRef.current;
-    if (!video || !canvas) return;
+    if (!video || !canvas || video.readyState < 2) return;
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
-    ctx.drawImage(video, 0, 0);
-    analyzeImage(canvas.toDataURL("image/jpeg", 0.8));
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
+    analyzeImage(dataUrl);
   }, [analyzeImage]);
 
   const handleGallery = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -333,6 +344,14 @@ export default function Scan() {
                 size="lg"
                 variant="outline"
                 className="h-14 rounded-2xl px-5"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <ImagePlus className="w-5 h-5 mr-1" /> Gallery
+              </Button>
+              <Button
+                size="lg"
+                variant="ghost"
+                className="h-14 rounded-2xl px-4 text-muted-foreground"
                 onClick={() => { stopCamera(); }}
               >
                 Cancel
@@ -351,6 +370,14 @@ export default function Scan() {
               </p>
             </div>
 
+            {/* Camera denied error */}
+            {cameraError && (
+              <div className="flex items-start gap-3 rounded-xl border border-destructive/30 bg-destructive/10 p-4 text-left max-w-sm">
+                <ShieldAlert className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />
+                <p className="text-sm text-destructive">{cameraError}</p>
+              </div>
+            )}
+
             {/* Tap to capture circle */}
             <button onClick={startCamera} className="relative group">
               <div className="absolute -inset-4 rounded-full border border-primary/30 shadow-[0_0_30px_hsl(var(--primary)/0.2)] animate-pulse" />
@@ -363,7 +390,7 @@ export default function Scan() {
             {/* Gallery upload */}
             <button
               onClick={() => fileInputRef.current?.click()}
-              className="flex items-center gap-2 text-sm text-primary hover:text-primary/80 transition-colors"
+              className="flex items-center gap-2 text-sm text-primary hover:text-primary/80 transition-colors font-medium"
             >
               <ImagePlus className="w-4 h-4" />
               Or upload from gallery
