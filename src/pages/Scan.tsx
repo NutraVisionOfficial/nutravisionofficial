@@ -138,22 +138,29 @@ export default function Scan() {
         video: { facingMode: "environment" },
       });
       streamRef.current = stream;
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        await videoRef.current.play();
-      }
       setCameraActive(true);
+      // Stream will be attached via the onVideoRef callback below
     } catch (err: any) {
-      if (err?.name === "NotAllowedError") {
-        setCameraError("Camera access denied. Please allow camera permissions in your browser settings.");
-      } else if (err?.name === "NotFoundError") {
-        setCameraError("No camera found on this device. Try uploading from gallery instead.");
-      } else {
-        setCameraError("Could not access camera. Try uploading from gallery instead.");
-      }
-      toast({ variant: "destructive", title: "Camera error", description: cameraError || "Could not access camera." });
+      setCameraActive(false);
+      const msg =
+        err?.name === "NotAllowedError"
+          ? "Camera access denied. Please allow camera permissions in your browser settings."
+          : err?.name === "NotFoundError"
+          ? "No camera found on this device. Try uploading from gallery instead."
+          : "Could not access camera. Try uploading from gallery instead.";
+      setCameraError(msg);
+      toast({ variant: "destructive", title: "Camera error", description: msg });
     }
-  }, [cameraError]);
+  }, []);
+
+  // Ref callback: attaches stream to video element when it mounts
+  const onVideoRef = useCallback((el: HTMLVideoElement | null) => {
+    (videoRef as React.MutableRefObject<HTMLVideoElement | null>).current = el;
+    if (el && streamRef.current) {
+      el.srcObject = streamRef.current;
+      el.play().catch(() => {});
+    }
+  }, []);
 
   const analyzeImage = useCallback(async (imageBase64: string) => {
     setAnalyzing(true);
@@ -319,11 +326,12 @@ export default function Scan() {
           <div className="space-y-4 animate-fade-in">
             <div className="relative rounded-2xl overflow-hidden border border-border aspect-[4/3]">
               <video
-                ref={videoRef}
+                ref={onVideoRef}
                 autoPlay
                 playsInline
                 muted
-                className="w-full h-full object-cover"
+                className="absolute inset-0 w-full h-full object-cover"
+                style={{ zIndex: 1 }}
               />
               {/* Focus frame */}
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
