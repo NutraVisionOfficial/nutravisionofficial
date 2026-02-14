@@ -14,6 +14,7 @@ import PaymentSuccess from "./pages/PaymentSuccess";
 import MealPlanner from "./pages/MealPlanner";
 import Progress from "./pages/Progress";
 import FoodSearch from "./pages/FoodSearch";
+import Scan from "./pages/Scan";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -32,10 +33,6 @@ function PublicOnlyRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
-// Placeholder pages for new nav tabs
-function ScanPage() {
-  return <div className="min-h-screen bg-background flex items-center justify-center"><p className="text-muted-foreground text-lg">Scan coming soon</p></div>;
-}
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -48,7 +45,7 @@ const App = () => (
             <Route path="/onboarding" element={<PublicOnlyRoute><Onboarding /></PublicOnlyRoute>} />
             <Route path="/auth" element={<PublicOnlyRoute><Auth /></PublicOnlyRoute>} />
             <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
-            <Route path="/scan" element={<ProtectedRoute><ScanPage /></ProtectedRoute>} />
+            <Route path="/scan" element={<ProtectedRoute><Scan /></ProtectedRoute>} />
             <Route path="/search" element={<ProtectedRoute><FoodSearch /></ProtectedRoute>} />
             <Route path="/progress" element={<ProtectedRoute><Progress /></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
