@@ -4,7 +4,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
+    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
 serve(async (req) => {
@@ -28,9 +28,8 @@ serve(async (req) => {
       { global: { headers: { Authorization: authHeader } } }
     );
 
-    const token = authHeader.replace("Bearer ", "");
-    const { data: claimsData, error: claimsError } = await supabase.auth.getClaims(token);
-    if (claimsError || !claimsData?.claims) {
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError || !user) {
       return new Response(
         JSON.stringify({ error: "Invalid authentication" }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -45,6 +44,15 @@ serve(async (req) => {
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+
+    // Validate the image data URL format
+    let imageUrl = imageBase64;
+    if (!imageUrl.startsWith("data:image/")) {
+      // If raw base64 without prefix, add it
+      imageUrl = `data:image/jpeg;base64,${imageUrl}`;
+    }
+
+    console.log("Image URL prefix:", imageUrl.substring(0, 40));
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
@@ -82,7 +90,7 @@ If you cannot identify food in the image, return: {"error":"No food detected in 
                 { type: "text", text: "Identify the food in this image. Estimate the portion size, calories, protein, carbs, and fats." },
                 {
                   type: "image_url",
-                  image_url: { url: imageBase64 },
+                  image_url: { url: imageUrl },
                 },
               ],
             },
