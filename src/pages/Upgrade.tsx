@@ -50,16 +50,11 @@ export default function Upgrade() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleCheckout = async () => {
+  const handleCheckout = () => {
     setLoading(true);
-    try {
-      // TODO: Replace with your Stripe Payment Link
-      // window.location.href = "https://buy.stripe.com/your-link";
-      // For now, simulate success:
-      navigate("/payment-success");
-    } finally {
-      setLoading(false);
-    }
+    const monthlyLink = "https://www.paypal.com/webapps/billing/plans/subscribe?plan_id=P-99N06105SK8880832NGGYXYA";
+    const yearlyLink = "https://www.paypal.com/webapps/billing/plans/subscribe?plan_id=P-99N06105SK8880832NGGYXYA";
+    window.location.href = yearly ? yearlyLink : monthlyLink;
   };
 
   return (
