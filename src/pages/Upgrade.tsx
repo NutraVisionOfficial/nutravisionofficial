@@ -54,7 +54,8 @@ export default function Upgrade() {
     setLoading(true);
     const monthlyLink = "https://www.paypal.com/webapps/billing/plans/subscribe?plan_id=P-99N06105SK8880832NGGYXYA";
     const yearlyLink = "https://www.paypal.com/webapps/billing/plans/subscribe?plan_id=P-99N06105SK8880832NGGYXYA";
-    window.location.href = yearly ? yearlyLink : monthlyLink;
+    window.open(yearly ? yearlyLink : monthlyLink, '_blank', 'noopener,noreferrer');
+    setLoading(false);
   };
 
   return (
