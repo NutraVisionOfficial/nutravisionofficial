@@ -18,6 +18,7 @@ import { DailyLogForm } from "@/components/DailyLogForm";
 import { LockedCard } from "@/components/LockedCard";
 import { MealPlannerCard } from "@/components/MealPlannerCard";
 import { FoodScanner } from "@/components/FoodScanner";
+import { WeeklyHabitTracker } from "@/components/WeeklyHabitTracker";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { useNavigate } from "react-router-dom";
@@ -127,6 +128,8 @@ const Index = () => {
                 {progress > 0 ? `You're ${Math.min(100, progress)}% closer to your goal. Keep going!` : "Start logging to track your progress!"}
               </p>
             </div>
+
+            <WeeklyHabitTracker logs={recentLogs || []} />
 
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
               <StatCard label="Today's Calories" value={today.totalCalories} subtitle={`Target: ${profile?.daily_calorie_target ?? 2000}`} icon="flame" />
