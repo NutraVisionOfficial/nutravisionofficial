@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ArrowLeft, Save, Sparkles } from "lucide-react";
+import { ArrowLeft, Sparkles, Calculator, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,52 +21,61 @@ export default function Settings() {
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  // Personal Info
   const [name, setName] = useState("");
-  // Body & Goals
-  const [goalWeight, setGoalWeight] = useState("");
-  const [calorieTarget, setCalorieTarget] = useState("");
-  const [timeframe, setTimeframe] = useState("");
   const [currentWeight, setCurrentWeight] = useState("");
-  // Biometrics & Activity
-  const [height, setHeight] = useState("");
-  const [age, setAge] = useState("");
-  const [activityLevel, setActivityLevel] = useState("sedentary");
-  // Diet & Macros
-  const [dietPref, setDietPref] = useState("standard");
-  const [proteinPct, setProteinPct] = useState("40");
-  const [carbsPct, setCarbsPct] = useState("30");
-  const [fatsPct, setFatsPct] = useState("30");
-  // App Preferences
-  const [theme, setTheme] = useState("system");
-  const [weighInReminder, setWeighInReminder] = useState(true);
-  const [mealReminder, setMealReminder] = useState(false);
+  const [goalWeight, setGoalWeight] = useState("");
+  const [timeframe, setTimeframe] = useState("12");
+  const [dietType, setDietType] = useState("standard");
+  const [budgetMode, setBudgetMode] = useState(false);
+  const [calorieTarget, setCalorieTarget] = useState<number | null>(null);
 
   useEffect(() => {
     if (profile) {
       setName(profile.name || "");
-      setGoalWeight(String(profile.goal_weight));
-      setCalorieTarget(String(profile.daily_calorie_target));
-      setTimeframe(String(profile.goal_timeframe_months));
       setCurrentWeight(String(profile.current_weight));
+      setGoalWeight(String(profile.goal_weight));
+      setTimeframe(String(profile.goal_timeframe_months));
+      setDietType(profile.diet_type || "standard");
+      setCalorieTarget(profile.daily_calorie_target);
     }
   }, [profile]);
 
-  const macroTotal = Number(proteinPct) + Number(carbsPct) + Number(fatsPct);
+  const calculateTarget = () => {
+    const cw = Number(currentWeight);
+    const gw = Number(goalWeight);
+    const months = Number(timeframe);
+    if (!cw || !gw || !months || months <= 0) {
+      toast({ title: "Missing info", description: "Please fill in all weight & timeline fields.", variant: "destructive" });
+      return;
+    }
 
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
+    // BMR estimate (Mifflin-St Jeor, assuming moderate activity, avg height/age)
+    const bmr = cw * 22; // simplified maintenance estimate
+    const totalKgToLose = cw - gw;
+    const dailyDeficit = totalKgToLose > 0
+      ? Math.min(750, Math.round((totalKgToLose * 7700) / (months * 30)))
+      : 0;
+    const target = Math.max(1200, Math.round(bmr - dailyDeficit));
+    setCalorieTarget(target);
+    return target;
+  };
+
+  const handleCalculateAndSave = async () => {
+    const target = calculateTarget();
+    if (!target) return;
+
     try {
       await updateProfile.mutateAsync({
         name,
-        goal_weight: Number(goalWeight),
-        daily_calorie_target: Number(calorieTarget),
-        goal_timeframe_months: Number(timeframe),
         current_weight: Number(currentWeight),
+        goal_weight: Number(goalWeight),
+        goal_timeframe_months: Number(timeframe),
+        daily_calorie_target: target,
+        diet_type: dietType,
       });
-      toast({ title: "Profile updated", description: "Your settings have been saved." });
+      toast({ title: "Target calculated! 🎯", description: `Your daily target is ${target} kcal. Dashboard updated.` });
     } catch {
-      toast({ title: "Error", description: "Failed to save settings.", variant: "destructive" });
+      toast({ title: "Error", description: "Failed to save. Try again.", variant: "destructive" });
     }
   };
 
@@ -85,193 +94,129 @@ export default function Settings() {
           <Button variant="ghost" size="icon" onClick={() => navigate("/")}>
             <ArrowLeft className="w-5 h-5" />
           </Button>
-          <h1 className="text-lg font-bold font-display text-foreground">Profile Settings</h1>
+          <h1 className="text-lg font-bold font-display text-foreground">Profile & Goals</h1>
         </div>
       </header>
 
-      <main className="container max-w-2xl mx-auto px-4 py-8 pb-28">
-        <form onSubmit={handleSave} className="space-y-6">
-          {/* Subscription Status Banner */}
-          <div className="rounded-xl border border-gold/30 bg-gold/5 px-5 py-3 flex items-center justify-between">
-            <p className="text-sm text-muted-foreground">
-              Current Plan: <span className="font-semibold text-foreground">Free Tier</span>
-            </p>
-            <button
-              type="button"
-              onClick={() => navigate("/upgrade")}
-              className="text-sm font-semibold text-gold hover:text-gold/80 transition-colors flex items-center gap-1"
-            >
-              <Sparkles className="w-3.5 h-3.5" />
-              Upgrade to Pro
-            </button>
+      <main className="container max-w-2xl mx-auto px-4 py-6 pb-32 space-y-6">
+        {/* Avatar & Greeting */}
+        <div className="flex flex-col items-center gap-3 py-4">
+          <div className="w-20 h-20 rounded-full bg-primary/15 border-2 border-primary/30 flex items-center justify-center">
+            <User className="w-9 h-9 text-primary" />
+          </div>
+          <div className="text-center">
+            <h2 className="text-xl font-bold font-display text-foreground">
+              Welcome, {name || "Stride User"}
+            </h2>
+            <p className="text-sm text-muted-foreground mt-0.5">Set your goals and let us handle the math</p>
+          </div>
+        </div>
+
+        {/* Subscription Banner */}
+        <div className="rounded-xl border border-gold/30 bg-gold/5 px-5 py-3 flex items-center justify-between">
+          <p className="text-sm text-muted-foreground">
+            Plan: <span className="font-semibold text-foreground capitalize">{profile?.subscription_status || "Free"}</span>
+          </p>
+          <button
+            type="button"
+            onClick={() => navigate("/upgrade")}
+            className="text-sm font-semibold text-gold hover:text-gold/80 transition-colors flex items-center gap-1"
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            Upgrade
+          </button>
+        </div>
+
+        {/* Personal Info */}
+        <div className="rounded-xl border border-border bg-card p-6 space-y-4">
+          <h2 className="text-base font-semibold font-display text-card-foreground">Personal Info</h2>
+          <div>
+            <Label htmlFor="name">Name</Label>
+            <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name" className="mt-1" />
+          </div>
+        </div>
+
+        {/* Transformation Setup */}
+        <div className="rounded-xl border border-primary/20 bg-card p-6 space-y-5">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-primary/15 flex items-center justify-center">
+              <Calculator className="w-4 h-4 text-primary" />
+            </div>
+            <h2 className="text-base font-semibold font-display text-card-foreground">Transformation Setup</h2>
           </div>
 
-          {/* Personal Info */}
-          <div className="rounded-xl border border-border bg-card p-6 space-y-4">
-            <h2 className="text-base font-semibold font-display text-card-foreground">Personal Info</h2>
+          <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="name">Name</Label>
-              <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name" className="mt-1" />
-            </div>
-          </div>
-
-          {/* Body & Goals */}
-          <div className="rounded-xl border border-border bg-card p-6 space-y-4">
-            <h2 className="text-base font-semibold font-display text-card-foreground">Body & Goals</h2>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="currentWeight">Current Weight (kg)</Label>
-                <Input id="currentWeight" type="number" step="0.1" value={currentWeight} onChange={(e) => setCurrentWeight(e.target.value)} className="mt-1" />
-              </div>
-              <div>
-                <Label htmlFor="goalWeight">Goal Weight (kg)</Label>
-                <Input id="goalWeight" type="number" step="0.1" value={goalWeight} onChange={(e) => setGoalWeight(e.target.value)} className="mt-1" />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="calorieTarget">Daily Calorie Target</Label>
-                <Input id="calorieTarget" type="number" value={calorieTarget} onChange={(e) => setCalorieTarget(e.target.value)} className="mt-1" />
-              </div>
-              <div>
-                <Label htmlFor="timeframe">Goal Timeframe (months)</Label>
-                <Input id="timeframe" type="number" value={timeframe} onChange={(e) => setTimeframe(e.target.value)} className="mt-1" />
-              </div>
-            </div>
-          </div>
-
-          {/* Biometrics & Activity */}
-          <div className="rounded-xl border border-border bg-card p-6 space-y-4">
-            <h2 className="text-base font-semibold font-display text-card-foreground">Biometrics & Activity</h2>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="height">Height (cm)</Label>
-                <Input id="height" type="number" value={height} onChange={(e) => setHeight(e.target.value)} placeholder="175" className="mt-1" />
-              </div>
-              <div>
-                <Label htmlFor="age">Age (years)</Label>
-                <Input id="age" type="number" value={age} onChange={(e) => setAge(e.target.value)} placeholder="28" className="mt-1" />
-              </div>
+              <Label htmlFor="currentWeight">Current Weight (kg)</Label>
+              <Input id="currentWeight" type="number" step="0.1" min="30" max="300" value={currentWeight} onChange={(e) => setCurrentWeight(e.target.value)} className="mt-1" />
             </div>
             <div>
-              <Label>Base Activity Level</Label>
-              <Select value={activityLevel} onValueChange={setActivityLevel}>
-                <SelectTrigger className="mt-1">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="sedentary">Sedentary</SelectItem>
-                  <SelectItem value="lightly_active">Lightly Active</SelectItem>
-                  <SelectItem value="moderately_active">Moderately Active</SelectItem>
-                  <SelectItem value="very_active">Very Active</SelectItem>
-                </SelectContent>
-              </Select>
+              <Label htmlFor="goalWeight">Goal Weight (kg)</Label>
+              <Input id="goalWeight" type="number" step="0.1" min="30" max="300" value={goalWeight} onChange={(e) => setGoalWeight(e.target.value)} className="mt-1" />
             </div>
           </div>
 
-          {/* Diet & Macros */}
-          <div className="rounded-xl border border-border bg-card p-6 space-y-4">
-            <h2 className="text-base font-semibold font-display text-card-foreground">Diet & Macros</h2>
-            <div>
-              <Label>Dietary Preference</Label>
-              <Select value={dietPref} onValueChange={setDietPref}>
-                <SelectTrigger className="mt-1">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="standard">Standard</SelectItem>
-                  <SelectItem value="vegetarian">Vegetarian</SelectItem>
-                  <SelectItem value="vegan">Vegan</SelectItem>
-                  <SelectItem value="keto">Keto</SelectItem>
-                  <SelectItem value="paleo">Paleo</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label>Custom Macro Split</Label>
-              <div className="grid grid-cols-3 gap-3 mt-1">
-                <div>
-                  <Input
-                    type="number"
-                    min={0}
-                    max={100}
-                    value={proteinPct}
-                    onChange={(e) => setProteinPct(e.target.value)}
-                    placeholder="Protein %"
-                  />
-                  <p className="text-xs text-muted-foreground mt-1 text-center">Protein %</p>
-                </div>
-                <div>
-                  <Input
-                    type="number"
-                    min={0}
-                    max={100}
-                    value={carbsPct}
-                    onChange={(e) => setCarbsPct(e.target.value)}
-                    placeholder="Carbs %"
-                  />
-                  <p className="text-xs text-muted-foreground mt-1 text-center">Carbs %</p>
-                </div>
-                <div>
-                  <Input
-                    type="number"
-                    min={0}
-                    max={100}
-                    value={fatsPct}
-                    onChange={(e) => setFatsPct(e.target.value)}
-                    placeholder="Fats %"
-                  />
-                  <p className="text-xs text-muted-foreground mt-1 text-center">Fats %</p>
-                </div>
-              </div>
-              <p className={`text-xs mt-2 ${macroTotal === 100 ? "text-primary" : "text-destructive"}`}>
-                {macroTotal === 100 ? "✓ Total equals 100%" : `Must equal 100% (currently ${macroTotal}%)`}
-              </p>
-            </div>
+          <div>
+            <Label>Timeline</Label>
+            <Select value={timeframe} onValueChange={setTimeframe}>
+              <SelectTrigger className="mt-1">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="3">3 Months</SelectItem>
+                <SelectItem value="6">6 Months</SelectItem>
+                <SelectItem value="12">1 Year</SelectItem>
+                <SelectItem value="18">1.5 Years</SelectItem>
+                <SelectItem value="24">2 Years</SelectItem>
+                <SelectItem value="36">3 Years</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
-          {/* App Preferences */}
-          <div className="rounded-xl border border-border bg-card p-6 space-y-5">
-            <h2 className="text-base font-semibold font-display text-card-foreground">App Preferences</h2>
-            <div>
-              <Label>Theme</Label>
-              <Select value={theme} onValueChange={setTheme}>
-                <SelectTrigger className="mt-1">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="light">Light</SelectItem>
-                  <SelectItem value="dark">Dark</SelectItem>
-                  <SelectItem value="system">System</SelectItem>
-                </SelectContent>
-              </Select>
+          {calorieTarget && (
+            <div className="rounded-lg bg-primary/10 border border-primary/20 p-4 text-center">
+              <p className="text-xs text-muted-foreground uppercase tracking-wider">Your Daily Target</p>
+              <p className="text-3xl font-bold font-display text-primary mt-1">{calorieTarget} kcal</p>
             </div>
-            <div className="flex items-center justify-between">
-              <div>
-                <Label className="text-sm">Daily Weigh-in Reminder</Label>
-                <p className="text-xs text-muted-foreground">Get reminded to log your weight each morning</p>
-              </div>
-              <Switch checked={weighInReminder} onCheckedChange={setWeighInReminder} />
-            </div>
-            <div className="flex items-center justify-between">
-              <div>
-                <Label className="text-sm">Meal Logging Reminders</Label>
-                <p className="text-xs text-muted-foreground">Reminders to log meals throughout the day</p>
-              </div>
-              <Switch checked={mealReminder} onCheckedChange={setMealReminder} />
-            </div>
+          )}
+        </div>
+
+        {/* App Preferences */}
+        <div className="rounded-xl border border-border bg-card p-6 space-y-5">
+          <h2 className="text-base font-semibold font-display text-card-foreground">App Preferences</h2>
+
+          <div>
+            <Label>Diet Type</Label>
+            <Select value={dietType} onValueChange={setDietType}>
+              <SelectTrigger className="mt-1">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="standard">Non-Veg</SelectItem>
+                <SelectItem value="vegetarian">Vegetarian</SelectItem>
+                <SelectItem value="eggetarian">Eggetarian</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
-          {/* Sticky Save Button */}
-          <div className="fixed bottom-0 left-0 right-0 bg-background/80 backdrop-blur-sm border-t border-border p-4 z-50">
-            <div className="container max-w-2xl mx-auto">
-              <Button type="submit" className="w-full" disabled={updateProfile.isPending}>
-                <Save className="w-4 h-4 mr-2" />
-                {updateProfile.isPending ? "Saving..." : "Save Changes"}
-              </Button>
+          <div className="flex items-center justify-between">
+            <div>
+              <Label className="text-sm">Budget-Friendly Mode</Label>
+              <p className="text-xs text-muted-foreground">Optimizes suggestions for low-cost local staples</p>
             </div>
+            <Switch checked={budgetMode} onCheckedChange={setBudgetMode} />
           </div>
-        </form>
+        </div>
+
+        {/* Calculate CTA */}
+        <Button
+          onClick={handleCalculateAndSave}
+          disabled={updateProfile.isPending}
+          className="w-full h-12 text-base font-semibold bg-primary text-primary-foreground shadow-[0_0_20px_hsl(var(--primary)/0.35)] hover:shadow-[0_0_28px_hsl(var(--primary)/0.5)] transition-shadow"
+        >
+          <Calculator className="w-5 h-5 mr-2" />
+          {updateProfile.isPending ? "Saving..." : "Calculate My Target"}
+        </Button>
       </main>
     </div>
   );
