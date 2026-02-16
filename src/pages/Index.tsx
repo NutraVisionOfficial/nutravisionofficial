@@ -10,7 +10,7 @@ import {
 import { Plus, Activity, Moon, Sun, LogOut, Settings, User, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { StatCard } from "@/components/StatCard";
-import { CalorieSummary } from "@/components/CalorieSummary";
+import { CalorieDashboard } from "@/components/CalorieDashboard";
 import { MilestoneTracker } from "@/components/MilestoneTracker";
 import { WeeklyChart } from "@/components/WeeklyChart";
 import { MacroChart } from "@/components/MacroChart";
@@ -131,6 +131,8 @@ const Index = () => {
 
             <WeeklyHabitTracker logs={recentLogs || []} />
 
+            <CalorieDashboard todayLog={todayLog} target={profile?.daily_calorie_target ?? 2000} />
+
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
               <StatCard label="Today's Calories" value={today.totalCalories} subtitle={`Target: ${profile?.daily_calorie_target ?? 2000}`} icon="flame" />
               <StatCard label="Current Weight" value={`${profile?.current_weight ?? 0}kg`} subtitle={`Goal: ${profile?.goal_weight ?? 0}kg`} icon="weight" />
@@ -141,7 +143,6 @@ const Index = () => {
             <MealPlannerCard isPro={isPro} />
 
             <div className="grid lg:grid-cols-2 gap-6">
-              <CalorieSummary todayLog={todayLog} target={profile?.daily_calorie_target ?? 2000} />
               <MilestoneTracker profile={profile} />
             </div>
 
