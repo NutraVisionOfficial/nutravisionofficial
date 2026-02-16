@@ -128,7 +128,7 @@ export function CalorieDashboard({
             return (
               <button
                 key={slot.label}
-                onClick={() => navigate("/food-search")}
+                onClick={() => navigate("/search")}
                 className="flex flex-col items-center gap-2 rounded-lg border border-dashed border-border bg-muted/30 p-4 transition-colors hover:bg-muted/60 hover:border-primary/40 cursor-pointer"
               >
                 <Icon className="w-5 h-5 text-muted-foreground" />
@@ -143,7 +143,7 @@ export function CalorieDashboard({
 
       {/* Log a Meal CTA */}
       <Button
-        onClick={() => navigate("/food-search")}
+        onClick={() => navigate("/search")}
         className="w-full h-12 text-base font-semibold bg-primary text-primary-foreground shadow-[0_0_20px_hsl(var(--primary)/0.35)] hover:shadow-[0_0_28px_hsl(var(--primary)/0.5)] transition-shadow"
       >
         <Plus className="w-5 h-5 mr-2" />
