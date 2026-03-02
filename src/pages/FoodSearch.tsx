@@ -9,7 +9,15 @@ import {
   DrawerTitle,
   DrawerFooter,
 } from "@/components/ui/drawer";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useTodayLog, useUpsertLog } from "@/hooks/useDailyLogs";
+import { useAddFoodLog } from "@/hooks/useFoodLogs";
 import { toast } from "@/hooks/use-toast";
 
 interface FoodItem {
@@ -56,14 +64,24 @@ const ALL_FOODS: FoodItem[] = [
   { name: "Almonds", emoji: "🥜", portion: "10 pieces", calories: 70, protein: 2.5, carbs: 2.5, fats: 6 },
 ];
 
+function getMealTypeFromTime(): string {
+  const hour = new Date().getHours();
+  if (hour >= 6 && hour < 11) return "breakfast";
+  if (hour >= 11 && hour < 15) return "lunch";
+  if (hour >= 18 && hour < 22) return "dinner";
+  return "snack";
+}
+
 export default function FoodSearch() {
   const [query, setQuery] = useState("");
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [selectedFood, setSelectedFood] = useState<FoodItem | null>(null);
   const [quantity, setQuantity] = useState(1);
+  const [mealType, setMealType] = useState(getMealTypeFromTime);
 
   const { data: todayLog } = useTodayLog();
   const upsertLog = useUpsertLog();
+  const addFoodLog = useAddFoodLog();
 
   const searchResults = useMemo(() => {
     if (!query.trim()) return [];
@@ -76,6 +94,7 @@ export default function FoodSearch() {
   const openDrawer = useCallback((food: FoodItem) => {
     setSelectedFood(food);
     setQuantity(1);
+    setMealType(getMealTypeFromTime());
     setDrawerOpen(true);
   }, []);
 
@@ -88,6 +107,20 @@ export default function FoodSearch() {
     const addFats = Math.round(selectedFood.fats * quantity);
 
     try {
+      // Save individual food entry
+      await addFoodLog.mutateAsync({
+        meal_type: mealType,
+        food_name: selectedFood.name,
+        emoji: selectedFood.emoji,
+        portion: selectedFood.portion,
+        calories: addCal,
+        protein: addProtein,
+        carbs: addCarbs,
+        fats: addFats,
+        quantity,
+      });
+
+      // Update daily aggregate
       await upsertLog.mutateAsync({
         total_calories: (todayLog?.total_calories ?? 0) + addCal,
         protein: (todayLog?.protein ?? 0) + addProtein,
@@ -97,18 +130,17 @@ export default function FoodSearch() {
         workout_duration_mins: todayLog?.workout_duration_mins ?? 0,
       });
 
-      toast({ title: `Added ${quantity}× ${selectedFood.emoji} ${selectedFood.name}`, description: `+${addCal} kcal logged` });
+      toast({ title: `Added ${quantity}× ${selectedFood.emoji} ${selectedFood.name}`, description: `+${addCal} kcal logged to ${mealType}` });
       setDrawerOpen(false);
     } catch {
       toast({ title: "Error", description: "Failed to log food", variant: "destructive" });
     }
-  }, [selectedFood, quantity, todayLog, upsertLog]);
+  }, [selectedFood, quantity, mealType, todayLog, upsertLog, addFoodLog]);
 
   const showResults = query.trim().length > 0;
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
       <header className="bg-card/60 backdrop-blur-xl sticky top-0 z-40 border-b border-border">
         <div className="container max-w-lg mx-auto px-4 pt-6 pb-4">
           <h1 className="text-2xl font-bold font-display text-foreground mb-4">Food Search</h1>
@@ -126,16 +158,11 @@ export default function FoodSearch() {
       </header>
 
       <main className="container max-w-lg mx-auto px-4 py-5 space-y-7">
-        {/* Search Results */}
         {showResults ? (
           <section className="space-y-2 animate-fade-in">
-            <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-3">
-              Results
-            </h3>
+            <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-3">Results</h3>
             {searchResults.length === 0 ? (
-              <p className="text-muted-foreground text-sm text-center py-10">
-                No results for "{query}"
-              </p>
+              <p className="text-muted-foreground text-sm text-center py-10">No results for "{query}"</p>
             ) : (
               searchResults.map((food) => (
                 <FoodRow key={food.name} food={food} onAdd={() => openDrawer(food)} />
@@ -144,42 +171,23 @@ export default function FoodSearch() {
           </section>
         ) : (
           <>
-            {/* Quick Log */}
             <section>
-              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-3">
-                Quick Log
-              </h3>
+              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-3">Quick Log</h3>
               <div className="flex gap-2.5 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-hide">
                 {QUICK_LOG.map((food) => (
-                  <button
-                    key={food.name}
-                    onClick={() => openDrawer(food)}
-                    className="flex-shrink-0 flex items-center gap-2 px-4 py-2.5 rounded-full border border-border bg-card hover:border-primary/50 hover:bg-primary/5 transition-all active:scale-95 shadow-sm"
-                  >
+                  <button key={food.name} onClick={() => openDrawer(food)} className="flex-shrink-0 flex items-center gap-2 px-4 py-2.5 rounded-full border border-border bg-card hover:border-primary/50 hover:bg-primary/5 transition-all active:scale-95 shadow-sm">
                     <span className="text-base">{food.emoji}</span>
-                    <span className="text-sm font-medium text-foreground whitespace-nowrap">
-                      {food.name}
-                    </span>
-                    <span className="text-xs text-primary font-bold whitespace-nowrap">
-                      {food.calories}
-                    </span>
+                    <span className="text-sm font-medium text-foreground whitespace-nowrap">{food.name}</span>
+                    <span className="text-xs text-primary font-bold whitespace-nowrap">{food.calories}</span>
                   </button>
                 ))}
               </div>
             </section>
-
-            {/* Common Indian Cravings */}
             <section>
-              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-3">
-                Common Indian Cravings
-              </h3>
+              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-3">Common Indian Cravings</h3>
               <div className="grid grid-cols-2 gap-3">
                 {CRAVINGS.map((food) => (
-                  <button
-                    key={food.name}
-                    onClick={() => openDrawer(food)}
-                    className="flex flex-col items-start gap-1.5 p-4 rounded-2xl border border-border bg-card hover:border-primary/40 hover:shadow-md hover:shadow-primary/5 transition-all active:scale-[0.97]"
-                  >
+                  <button key={food.name} onClick={() => openDrawer(food)} className="flex flex-col items-start gap-1.5 p-4 rounded-2xl border border-border bg-card hover:border-primary/40 hover:shadow-md hover:shadow-primary/5 transition-all active:scale-[0.97]">
                     <span className="text-2xl">{food.emoji}</span>
                     <span className="text-sm font-semibold text-foreground leading-tight">{food.name}</span>
                     <span className="text-xs text-primary font-bold">{food.calories} kcal</span>
@@ -191,7 +199,6 @@ export default function FoodSearch() {
         )}
       </main>
 
-      {/* Log Food Drawer */}
       <Drawer open={drawerOpen} onOpenChange={setDrawerOpen}>
         <DrawerContent>
           {selectedFood && (
@@ -205,27 +212,31 @@ export default function FoodSearch() {
               </DrawerHeader>
 
               <div className="px-4 space-y-5">
+                {/* Meal type selector */}
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-foreground">Meal</span>
+                  <Select value={mealType} onValueChange={setMealType}>
+                    <SelectTrigger className="w-36">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="breakfast">☀️ Breakfast</SelectItem>
+                      <SelectItem value="lunch">🌤️ Lunch</SelectItem>
+                      <SelectItem value="dinner">🌙 Dinner</SelectItem>
+                      <SelectItem value="snack">🍪 Snack</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
                 {/* Quantity selector */}
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium text-foreground">Quantity</span>
                   <div className="flex items-center gap-3">
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      className="h-9 w-9 rounded-full"
-                      onClick={() => setQuantity(Math.max(0.5, quantity - 0.5))}
-                    >
+                    <Button variant="outline" size="icon" className="h-9 w-9 rounded-full" onClick={() => setQuantity(Math.max(0.5, quantity - 0.5))}>
                       <Minus className="w-4 h-4" />
                     </Button>
-                    <span className="text-xl font-bold font-display text-foreground w-10 text-center">
-                      {quantity}
-                    </span>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      className="h-9 w-9 rounded-full"
-                      onClick={() => setQuantity(quantity + 0.5)}
-                    >
+                    <span className="text-xl font-bold font-display text-foreground w-10 text-center">{quantity}</span>
+                    <Button variant="outline" size="icon" className="h-9 w-9 rounded-full" onClick={() => setQuantity(quantity + 0.5)}>
                       <Plus className="w-4 h-4" />
                     </Button>
                   </div>
@@ -255,9 +266,9 @@ export default function FoodSearch() {
                   size="lg"
                   className="w-full h-14 rounded-xl text-base font-bold shadow-lg shadow-primary/25"
                   onClick={handleAddToDiary}
-                  disabled={upsertLog.isPending}
+                  disabled={upsertLog.isPending || addFoodLog.isPending}
                 >
-                  {upsertLog.isPending ? "Adding..." : "Add to Diary"}
+                  {upsertLog.isPending || addFoodLog.isPending ? "Adding..." : "Add to Diary"}
                 </Button>
               </DrawerFooter>
             </>
@@ -270,10 +281,7 @@ export default function FoodSearch() {
 
 function FoodRow({ food, onAdd }: { food: FoodItem; onAdd: () => void }) {
   return (
-    <button
-      onClick={onAdd}
-      className="w-full flex items-center justify-between rounded-xl border border-border bg-card p-4 hover:border-primary/30 transition-all active:scale-[0.98]"
-    >
+    <button onClick={onAdd} className="w-full flex items-center justify-between rounded-xl border border-border bg-card p-4 hover:border-primary/30 transition-all active:scale-[0.98]">
       <div className="flex items-center gap-3 text-left">
         <span className="text-xl">{food.emoji}</span>
         <div>

@@ -1,6 +1,8 @@
+import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus, Coffee, Sun, Moon as MoonIcon, Cookie } from "lucide-react";
+import { Plus, Coffee, Sun, Moon as MoonIcon, Cookie, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useTodayFoodLogs, useDeleteFoodLog } from "@/hooks/useFoodLogs";
 
 interface DayLog {
   total_calories: number;
@@ -17,6 +19,15 @@ interface CalorieDashboardProps {
   fatsTarget?: number;
 }
 
+const MEAL_META = {
+  breakfast: { label: "Breakfast", icon: Coffee, time: "6am–10am" },
+  lunch: { label: "Lunch", icon: Sun, time: "11am–2pm" },
+  dinner: { label: "Dinner", icon: MoonIcon, time: "6pm–9pm" },
+  snack: { label: "Snacks", icon: Cookie, time: "Anytime" },
+} as const;
+
+type MealType = keyof typeof MEAL_META;
+
 export function CalorieDashboard({
   todayLog,
   target,
@@ -25,6 +36,8 @@ export function CalorieDashboard({
   fatsTarget = 65,
 }: CalorieDashboardProps) {
   const navigate = useNavigate();
+  const { data: foodLogs } = useTodayFoodLogs();
+  const deleteFoodLog = useDeleteFoodLog();
 
   const consumed = todayLog?.total_calories ?? 0;
   const remaining = Math.max(0, target - consumed);
@@ -37,12 +50,21 @@ export function CalorieDashboard({
   const circumference = 2 * Math.PI * 58;
   const strokeDashoffset = circumference - (percentage / 100) * circumference;
 
-  const mealSlots = [
-    { label: "Breakfast", icon: Coffee, time: "6am–10am" },
-    { label: "Lunch", icon: Sun, time: "11am–2pm" },
-    { label: "Dinner", icon: MoonIcon, time: "6pm–9pm" },
-    { label: "Snacks", icon: Cookie, time: "Anytime" },
-  ];
+  // Group food logs by meal type
+  const groupedLogs = useMemo(() => {
+    const groups: Record<MealType, typeof foodLogs> = {
+      breakfast: [],
+      lunch: [],
+      dinner: [],
+      snack: [],
+    };
+    for (const log of foodLogs || []) {
+      const key = (log.meal_type as MealType) || "snack";
+      if (groups[key]) groups[key]!.push(log);
+      else groups.snack!.push(log);
+    }
+    return groups;
+  }, [foodLogs]);
 
   return (
     <div className="space-y-5 animate-fade-in">
@@ -53,89 +75,97 @@ export function CalorieDashboard({
         </h3>
 
         <div className="flex flex-col items-center gap-5">
-          {/* Ring */}
           <div className="relative w-40 h-40">
             <svg className="w-full h-full -rotate-90" viewBox="0 0 128 128">
+              <circle cx="64" cy="64" r="58" fill="none" stroke="hsl(var(--secondary))" strokeWidth="7" />
               <circle
-                cx="64" cy="64" r="58"
-                fill="none"
-                stroke="hsl(var(--secondary))"
-                strokeWidth="7"
-              />
-              <circle
-                cx="64" cy="64" r="58"
-                fill="none"
-                stroke="hsl(var(--neon-green))"
-                strokeWidth="7"
-                strokeLinecap="round"
-                strokeDasharray={circumference}
-                strokeDashoffset={strokeDashoffset}
+                cx="64" cy="64" r="58" fill="none"
+                stroke="hsl(var(--neon-green))" strokeWidth="7" strokeLinecap="round"
+                strokeDasharray={circumference} strokeDashoffset={strokeDashoffset}
                 className="transition-all duration-700 ease-out"
-                style={{
-                  filter: "drop-shadow(0 0 6px hsl(var(--neon-green) / 0.5))",
-                }}
+                style={{ filter: "drop-shadow(0 0 6px hsl(var(--neon-green) / 0.5))" }}
               />
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="text-3xl font-bold font-display text-card-foreground leading-none">
-                {remaining}
-              </span>
+              <span className="text-3xl font-bold font-display text-card-foreground leading-none">{remaining}</span>
               <span className="text-xs text-muted-foreground mt-1">kcal left</span>
-              <span className="text-[10px] text-muted-foreground mt-0.5">
-                Goal: {target}
-              </span>
+              <span className="text-[10px] text-muted-foreground mt-0.5">Goal: {target}</span>
             </div>
           </div>
 
-          {/* Macro Bars */}
           <div className="w-full space-y-3">
-            <MacroBar
-              label="Protein"
-              value={protein}
-              max={proteinTarget}
-              unit="g"
-              color="bg-neon-blue"
-              glowVar="--neon-blue"
-            />
-            <MacroBar
-              label="Carbs"
-              value={carbs}
-              max={carbsTarget}
-              unit="g"
-              color="bg-neon-purple"
-              glowVar="--neon-purple"
-            />
-            <MacroBar
-              label="Fats"
-              value={fats}
-              max={fatsTarget}
-              unit="g"
-              color="bg-neon-orange"
-              glowVar="--neon-orange"
-            />
+            <MacroBar label="Protein" value={protein} max={proteinTarget} unit="g" color="bg-neon-blue" glowVar="--neon-blue" />
+            <MacroBar label="Carbs" value={carbs} max={carbsTarget} unit="g" color="bg-neon-purple" glowVar="--neon-purple" />
+            <MacroBar label="Fats" value={fats} max={fatsTarget} unit="g" color="bg-neon-orange" glowVar="--neon-orange" />
           </div>
         </div>
       </div>
 
-      {/* Today's Diary */}
+      {/* Today's Diary - Real Data */}
       <div className="rounded-xl border border-border bg-card p-5">
         <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">
           Today's Diary
         </h3>
-        <div className="grid grid-cols-2 gap-3">
-          {mealSlots.map((slot) => {
-            const Icon = slot.icon;
+        <div className="space-y-4">
+          {(Object.keys(MEAL_META) as MealType[]).map((mealType) => {
+            const meta = MEAL_META[mealType];
+            const Icon = meta.icon;
+            const items = groupedLogs[mealType] || [];
+            const mealCalories = items.reduce((s, i) => s + i.calories, 0);
+
             return (
-              <button
-                key={slot.label}
-                onClick={() => navigate("/search")}
-                className="flex flex-col items-center gap-2 rounded-lg border border-dashed border-border bg-muted/30 p-4 transition-colors hover:bg-muted/60 hover:border-primary/40 cursor-pointer"
-              >
-                <Icon className="w-5 h-5 text-muted-foreground" />
-                <span className="text-sm font-medium text-card-foreground">{slot.label}</span>
-                <span className="text-[10px] text-muted-foreground">{slot.time}</span>
-                <span className="text-xs text-primary mt-1">+ Add</span>
-              </button>
+              <div key={mealType} className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Icon className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-sm font-semibold text-card-foreground">{meta.label}</span>
+                    {mealCalories > 0 && (
+                      <span className="text-xs text-primary font-medium">{mealCalories} kcal</span>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => navigate("/search")}
+                    className="text-xs text-primary font-medium hover:underline cursor-pointer"
+                  >
+                    + Add
+                  </button>
+                </div>
+
+                {items.length > 0 ? (
+                  <div className="space-y-1.5 ml-6">
+                    {items.map((item) => (
+                      <div
+                        key={item.id}
+                        className="flex items-center justify-between rounded-lg bg-muted/30 px-3 py-2 group"
+                      >
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm">{item.emoji}</span>
+                          <span className="text-sm text-card-foreground">{item.food_name}</span>
+                          {Number(item.quantity) > 1 && (
+                            <span className="text-[10px] text-muted-foreground">×{Number(item.quantity)}</span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-muted-foreground">{item.calories} kcal</span>
+                          <button
+                            onClick={() => deleteFoodLog.mutate(item.id)}
+                            className="opacity-0 group-hover:opacity-100 transition-opacity text-destructive"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => navigate("/search")}
+                    className="ml-6 w-[calc(100%-1.5rem)] flex items-center justify-center gap-1 rounded-lg border border-dashed border-border bg-muted/20 p-3 text-xs text-muted-foreground hover:bg-muted/40 hover:border-primary/30 transition-colors cursor-pointer"
+                  >
+                    <Plus className="w-3.5 h-3.5" /> Log {meta.label.toLowerCase()}
+                  </button>
+                )}
+              </div>
             );
           })}
         </div>
@@ -153,37 +183,20 @@ export function CalorieDashboard({
   );
 }
 
-function MacroBar({
-  label,
-  value,
-  max,
-  unit,
-  color,
-  glowVar,
-}: {
-  label: string;
-  value: number;
-  max: number;
-  unit: string;
-  color: string;
-  glowVar: string;
+function MacroBar({ label, value, max, unit, color, glowVar }: {
+  label: string; value: number; max: number; unit: string; color: string; glowVar: string;
 }) {
   const pct = Math.min(100, max > 0 ? (value / max) * 100 : 0);
   return (
     <div>
       <div className="flex justify-between text-xs mb-1">
         <span className="text-muted-foreground">{label}</span>
-        <span className="text-card-foreground font-medium">
-          {value}{unit} / {max}{unit}
-        </span>
+        <span className="text-card-foreground font-medium">{value}{unit} / {max}{unit}</span>
       </div>
       <div className="h-2 rounded-full bg-secondary overflow-hidden">
         <div
           className={`h-full rounded-full ${color} transition-all duration-500`}
-          style={{
-            width: `${pct}%`,
-            boxShadow: `0 0 8px hsl(var(${glowVar}) / 0.4)`,
-          }}
+          style={{ width: `${pct}%`, boxShadow: `0 0 8px hsl(var(${glowVar}) / 0.4)` }}
         />
       </div>
     </div>

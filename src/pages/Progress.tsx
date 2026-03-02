@@ -3,6 +3,7 @@ import { format, subDays, startOfMonth, addDays } from "date-fns";
 import { TrendingDown, Flame, Zap, Dumbbell, Activity } from "lucide-react";
 import { useDailyLogs, useStreak } from "@/hooks/useDailyLogs";
 import { useProfile } from "@/hooks/useProfile";
+import { useWeightLogs } from "@/hooks/useWeightLogs";
 import {
   ResponsiveContainer,
   AreaChart,
@@ -17,19 +18,18 @@ export default function Progress() {
   const { data: logs } = useDailyLogs(30);
   const { data: profile } = useProfile();
   const { data: streak } = useStreak();
+  const { data: weightEntries } = useWeightLogs(90);
 
   const today = new Date();
 
   // Weight chart data (last 30 days with weight entries)
   const weightData = useMemo(() => {
-    if (!logs) return [];
-    return logs
-      .filter((l) => l.current_weight && Number(l.current_weight) > 0)
-      .map((l) => ({
-        date: format(new Date(l.date), "MMM d"),
-        weight: Number(l.current_weight),
-      }));
-  }, [logs]);
+    if (!weightEntries) return [];
+    return weightEntries.map((l) => ({
+      date: format(new Date(l.date), "MMM d"),
+      weight: Number(l.weight),
+    }));
+  }, [weightEntries]);
 
   // Prediction engine
   const prediction = useMemo(() => {
