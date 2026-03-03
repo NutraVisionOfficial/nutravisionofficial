@@ -12,6 +12,7 @@ import Settings from "./pages/Settings";
 import Upgrade from "./pages/Upgrade";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import MealPlanner from "./pages/MealPlanner";
+import MealPlanResults from "./pages/MealPlanResults";
 import Progress from "./pages/Progress";
 import FoodSearch from "./pages/FoodSearch";
 import Scan from "./pages/Scan";
@@ -52,6 +53,7 @@ const App = () => (
             <Route path="/upgrade" element={<ProtectedRoute><Upgrade /></ProtectedRoute>} />
             <Route path="/payment-success" element={<ProtectedRoute><PaymentSuccess /></ProtectedRoute>} />
             <Route path="/meal-planner" element={<ProtectedRoute><MealPlanner /></ProtectedRoute>} />
+            <Route path="/meal-plan-results" element={<ProtectedRoute><MealPlanResults /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
