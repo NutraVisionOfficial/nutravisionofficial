@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import { ArrowLeft, Settings2, Sparkles, Lock, Loader2, ChefHat, Leaf, Timer, UtensilsCrossed } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
 import { useProfile, useUpdateProfile } from "@/hooks/useProfile";
+import { useGenerateMealPlan } from "@/hooks/useMealPlan";
 import { toast } from "@/hooks/use-toast";
 
 const DIET_TYPES = ["Standard", "Vegetarian", "Vegan", "Keto", "Paleo", "High Protein"] as const;
@@ -32,6 +32,7 @@ export default function MealPlanner() {
   const [cookingTime, setCookingTime] = useState("moderate");
   const [mealsPerDay, setMealsPerDay] = useState("3_meals_2_snacks");
   const [saving, setSaving] = useState(false);
+  const { generate, generating } = useGenerateMealPlan();
 
   // Load existing preferences
   useEffect(() => {
@@ -62,7 +63,18 @@ export default function MealPlanner() {
         cooking_time: cookingTime,
         meals_per_day: mealsPerDay,
       });
-      toast({ title: "Preferences saved! ✅", description: "AI meal plan generation coming soon." });
+
+      const plan = await generate({
+        dietType: dietType.toLowerCase().replace(" ", "_"),
+        allergies,
+        cookingTime,
+        mealsPerDay,
+        calorieTarget: (profile as any)?.daily_calorie_target || 2000,
+      });
+
+      if (plan) {
+        navigate("/meal-plan-results", { state: { plan } });
+      }
     } catch {
       toast({ title: "Error saving preferences", variant: "destructive" });
     } finally {
@@ -78,8 +90,32 @@ export default function MealPlanner() {
     );
   }
 
+  const isWorking = saving || generating;
+
   return (
     <div className="min-h-screen bg-background">
+      {/* Generation Loading Overlay */}
+      {generating && (
+        <div className="fixed inset-0 z-50 bg-background/95 backdrop-blur-sm flex flex-col items-center justify-center gap-6">
+          <div className="relative">
+            <div className="w-20 h-20 rounded-2xl bg-primary/15 flex items-center justify-center animate-pulse">
+              <span className="text-4xl">👨‍🍳</span>
+            </div>
+            <div className="absolute -top-2 -right-2 w-6 h-6 bg-primary rounded-full flex items-center justify-center animate-bounce">
+              <span className="text-xs">✨</span>
+            </div>
+          </div>
+          <div className="text-center space-y-2 max-w-xs">
+            <p className="font-semibold text-foreground font-display">
+              AI is crafting your perfect menu...
+            </p>
+            <p className="text-sm text-muted-foreground italic">
+              Based on your preferences, creating a balanced weekly plan
+            </p>
+          </div>
+          <Loader2 className="w-6 h-6 text-primary animate-spin" />
+        </div>
+      )}
       <header className="sticky top-0 z-40 border-b border-border bg-card/80 backdrop-blur-sm">
         <div className="container max-w-4xl mx-auto flex items-center justify-between px-4 py-4">
           <div className="flex items-center gap-3">
@@ -217,16 +253,16 @@ export default function MealPlanner() {
             size="lg"
             className="w-full h-14 rounded-xl bg-primary text-primary-foreground font-bold text-base shadow-lg"
             onClick={handleGenerate}
-            disabled={saving}
+            disabled={isWorking}
           >
-            {saving ? (
+            {isWorking ? (
               <Loader2 className="w-5 h-5 animate-spin mr-2" />
             ) : isPro ? (
               <Sparkles className="w-5 h-5 mr-2" />
             ) : (
               <Lock className="w-5 h-5 mr-2" />
             )}
-            {saving ? "Saving..." : isPro ? "✨ Create My Custom Plan" : "Unlock with Pro"}
+            {isWorking ? "Generating..." : isPro ? "✨ Create My Custom Plan" : "Unlock with Pro"}
           </Button>
         </div>
       </main>
