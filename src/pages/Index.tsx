@@ -19,6 +19,7 @@ import { LockedCard } from "@/components/LockedCard";
 import { MealPlannerCard } from "@/components/MealPlannerCard";
 import { FoodScanner } from "@/components/FoodScanner";
 import { WeeklyHabitTracker } from "@/components/WeeklyHabitTracker";
+import { WeightLogWidget } from "@/components/WeightLogWidget";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { useNavigate } from "react-router-dom";
@@ -139,6 +140,8 @@ const Index = () => {
               <StatCard label="Today's Workout" value={today.workoutType} subtitle={today.workoutDurationMins > 0 ? `${today.workoutDurationMins} min` : "Rest day"} icon="workout" />
               <StatCard label="Active Streak" value={`${streak ?? 0} days`} subtitle="Keep it up!" icon="streak" variant="accent" />
             </div>
+
+            <WeightLogWidget />
 
             <MealPlannerCard isPro={isPro} />
 
