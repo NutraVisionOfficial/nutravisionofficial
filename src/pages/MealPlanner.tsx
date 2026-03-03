@@ -30,7 +30,7 @@ export default function MealPlanner() {
   const [dietType, setDietType] = useState("Standard");
   const [allergies, setAllergies] = useState<string[]>([]);
   const [cookingTime, setCookingTime] = useState("moderate");
-  const [mealsPerDay, setMealsPerDay] = useState("3_meals");
+  const [mealsPerDay, setMealsPerDay] = useState("3_meals_2_snacks");
   const [saving, setSaving] = useState(false);
 
   // Load existing preferences
@@ -105,10 +105,10 @@ export default function MealPlanner() {
           <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto">
             <ChefHat className="w-8 h-8 text-primary" />
           </div>
-          <h2 className="text-2xl md:text-3xl font-extrabold font-display text-foreground">
+          <h2 className="text-2xl md:text-3xl font-semibold text-foreground" style={{ fontFamily: "'Playfair Display', serif" }}>
             Customize Your Menu
           </h2>
-          <p className="text-muted-foreground text-sm max-w-sm mx-auto">
+          <p className="text-muted-foreground text-sm max-w-sm mx-auto italic">
             Tell us your preferences and we'll create a personalized weekly meal plan.
           </p>
         </div>
@@ -149,10 +149,10 @@ export default function MealPlanner() {
                 <button
                   key={a}
                   onClick={() => toggleAllergy(a)}
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition-colors border ${
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all border ${
                     allergies.includes(a)
-                      ? "bg-destructive/10 text-destructive border-destructive/30"
-                      : "bg-muted/50 text-foreground border-border hover:bg-muted"
+                      ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                      : "bg-card text-foreground border-border hover:bg-muted"
                   }`}
                 >
                   {a}
@@ -226,7 +226,7 @@ export default function MealPlanner() {
             ) : (
               <Lock className="w-5 h-5 mr-2" />
             )}
-            {saving ? "Saving..." : isPro ? "Create My Custom Plan" : "Unlock with Pro"}
+            {saving ? "Saving..." : isPro ? "✨ Create My Custom Plan" : "Unlock with Pro"}
           </Button>
         </div>
       </main>
