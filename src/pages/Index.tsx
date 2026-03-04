@@ -20,6 +20,7 @@ import { MealPlannerCard } from "@/components/MealPlannerCard";
 import { FoodScanner } from "@/components/FoodScanner";
 import { WeeklyHabitTracker } from "@/components/WeeklyHabitTracker";
 import { WeightLogWidget } from "@/components/WeightLogWidget";
+import { PhysiqueScanner } from "@/components/PhysiqueScanner";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { useNavigate } from "react-router-dom";
@@ -133,6 +134,8 @@ const Index = () => {
             <WeeklyHabitTracker logs={recentLogs || []} />
 
             <CalorieDashboard todayLog={todayLog} target={profile?.daily_calorie_target ?? 2000} />
+
+            <PhysiqueScanner />
 
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
               <StatCard label="Today's Calories" value={today.totalCalories} subtitle={`Target: ${profile?.daily_calorie_target ?? 2000}`} icon="flame" />
