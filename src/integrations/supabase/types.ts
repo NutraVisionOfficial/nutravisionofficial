@@ -134,6 +134,42 @@ export type Database = {
         }
         Relationships: []
       }
+      physique_scans: {
+        Row: {
+          body_fat_percentage: number
+          category: string
+          created_at: string
+          date: string
+          id: string
+          muscle_mass: string
+          notes: string
+          photo_url: string
+          user_id: string
+        }
+        Insert: {
+          body_fat_percentage: number
+          category?: string
+          created_at?: string
+          date?: string
+          id?: string
+          muscle_mass?: string
+          notes?: string
+          photo_url?: string
+          user_id: string
+        }
+        Update: {
+          body_fat_percentage?: number
+          category?: string
+          created_at?: string
+          date?: string
+          id?: string
+          muscle_mass?: string
+          notes?: string
+          photo_url?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           allergies: string[]
