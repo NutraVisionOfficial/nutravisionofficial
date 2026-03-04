@@ -2,6 +2,7 @@ import { useState, useRef, useCallback } from "react";
 import { Camera, Upload, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import { useSavePhysiqueScan } from "@/hooks/usePhysiqueScans";
 import { toast } from "sonner";
 
 type ScanState = "idle" | "scanning" | "results";
@@ -18,6 +19,7 @@ export function PhysiqueScanner() {
   const [preview, setPreview] = useState<string | null>(null);
   const [result, setResult] = useState<PhysiqueResult | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const saveScan = useSavePhysiqueScan();
 
   const handleFile = useCallback(async (file: File) => {
     if (!file.type.startsWith("image/")) {
@@ -165,14 +167,26 @@ export function PhysiqueScanner() {
           </p>
 
           <Button
-            onClick={() => {
-              toast.success("Logged to Progress Gallery");
-              reset();
+            disabled={saveScan.isPending}
+            onClick={async () => {
+              try {
+                await saveScan.mutateAsync({
+                  body_fat_percentage: result.body_fat_percentage,
+                  category: result.category,
+                  muscle_mass: result.muscle_mass,
+                  notes: result.notes,
+                  photoBase64: preview,
+                });
+                toast.success("Logged to Progress Gallery");
+                reset();
+              } catch (err: any) {
+                toast.error(err.message || "Failed to save");
+              }
             }}
             className="w-full"
           >
             <Upload className="w-4 h-4 mr-2" />
-            Log to Progress Gallery
+            {saveScan.isPending ? "Saving..." : "Log to Progress Gallery"}
           </Button>
         </div>
       )}
