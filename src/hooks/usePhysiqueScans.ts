@@ -45,7 +45,6 @@ export function useSavePhysiqueScan() {
     }) => {
       const userId = session!.user.id;
 
-      // Upload photo to storage
       const fileName = `${userId}/${Date.now()}.jpg`;
       const base64Data = scan.photoBase64.split(",")[1];
       const byteArray = Uint8Array.from(atob(base64Data), (c) => c.charCodeAt(0));
@@ -72,6 +71,23 @@ export function useSavePhysiqueScan() {
         } as any);
 
       if (insertError) throw insertError;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["physique-scans"] });
+    },
+  });
+}
+
+export function useDeletePhysiqueScan() {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (scanId: string) => {
+      const { error } = await supabase
+        .from("physique_scans" as any)
+        .delete()
+        .eq("id", scanId);
+      if (error) throw error;
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["physique-scans"] });
