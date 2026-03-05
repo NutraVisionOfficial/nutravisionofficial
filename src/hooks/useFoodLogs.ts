@@ -52,12 +52,38 @@ export function useAddFoodLog() {
 }
 
 export function useDeleteFoodLog() {
+  const { user } = useAuth();
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase.from("food_logs").delete().eq("id", id);
       if (error) throw error;
+
+      // Recalculate daily totals from remaining food logs
+      const today = new Date().toISOString().split("T")[0];
+      const { data: remaining } = await supabase
+        .from("food_logs")
+        .select("calories, protein, carbs, fats")
+        .eq("user_id", user!.id)
+        .eq("date", today);
+
+      const totals = (remaining || []).reduce(
+        (acc, r) => ({
+          total_calories: acc.total_calories + r.calories,
+          protein: acc.protein + Number(r.protein),
+          carbs: acc.carbs + Number(r.carbs),
+          fats: acc.fats + Number(r.fats),
+        }),
+        { total_calories: 0, protein: 0, carbs: 0, fats: 0 }
+      );
+
+      await supabase
+        .from("daily_logs")
+        .upsert(
+          { ...totals, user_id: user!.id, date: today },
+          { onConflict: "user_id,date" }
+        );
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["food_logs"] });
