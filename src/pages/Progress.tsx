@@ -4,6 +4,7 @@ import { TrendingDown, Flame, Zap, Dumbbell, Activity } from "lucide-react";
 import { useDailyLogs, useStreak } from "@/hooks/useDailyLogs";
 import { useProfile } from "@/hooks/useProfile";
 import { useWeightLogs } from "@/hooks/useWeightLogs";
+import { usePhysiqueScans } from "@/hooks/usePhysiqueScans";
 import {
   ResponsiveContainer,
   AreaChart,
@@ -19,6 +20,7 @@ export default function Progress() {
   const { data: profile } = useProfile();
   const { data: streak } = useStreak();
   const { data: weightEntries } = useWeightLogs(90);
+  const { data: physiqueScans } = usePhysiqueScans();
 
   const today = new Date();
 
@@ -30,6 +32,14 @@ export default function Progress() {
       weight: Number(l.weight),
     }));
   }, [weightEntries]);
+
+  const bodyFatData = useMemo(() => {
+    if (!physiqueScans) return [];
+    return physiqueScans.map((s) => ({
+      date: format(new Date(s.created_at), "MMM d"),
+      bf: Number(s.body_fat_percentage),
+    }));
+  }, [physiqueScans]);
 
   // Prediction engine
   const prediction = useMemo(() => {
@@ -174,7 +184,57 @@ export default function Progress() {
           )}
         </div>
 
-        {/* Weekly Consistency */}
+        {/* Body Fat Trend */}
+        <div className="rounded-xl border border-border bg-card p-5 animate-fade-in">
+          <h3 className="text-base font-semibold font-display text-card-foreground mb-4">Body Fat Trend</h3>
+          {bodyFatData.length > 1 ? (
+            <ResponsiveContainer width="100%" height={220}>
+              <AreaChart data={bodyFatData} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="bfGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="hsl(var(--accent))" stopOpacity={0.3} />
+                    <stop offset="100%" stopColor="hsl(var(--accent))" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <XAxis
+                  dataKey="date"
+                  tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <YAxis
+                  domain={["dataMin - 1", "dataMax + 1"]}
+                  tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
+                  axisLine={false}
+                  tickLine={false}
+                  unit="%"
+                />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "hsl(var(--card))",
+                    border: "1px solid hsl(var(--border))",
+                    borderRadius: "8px",
+                    fontSize: "12px",
+                  }}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="bf"
+                  name="Body Fat"
+                  stroke="hsl(var(--accent))"
+                  strokeWidth={2}
+                  fill="url(#bfGradient)"
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="h-[220px] flex items-center justify-center text-muted-foreground text-sm">
+              Complete at least 2 physique scans to see trends
+            </div>
+          )}
+        </div>
+
         <div className="rounded-xl border border-border bg-card p-5 animate-fade-in">
           <h3 className="text-base font-semibold font-display text-card-foreground mb-4">
             Weekly Consistency
