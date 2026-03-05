@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Plus, Coffee, Sun, Moon as MoonIcon, Cookie, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -134,27 +134,29 @@ export function CalorieDashboard({
                 {items.length > 0 ? (
                   <div className="space-y-1.5 ml-6">
                     {items.map((item) => (
-                      <div
+                      <SwipeToDelete
                         key={item.id}
-                        className="flex items-center justify-between rounded-lg bg-muted/30 px-3 py-2 group"
+                        onDelete={() => deleteFoodLog.mutate(item.id)}
                       >
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm">{item.emoji}</span>
-                          <span className="text-sm text-card-foreground">{item.food_name}</span>
-                          {Number(item.quantity) > 1 && (
-                            <span className="text-[10px] text-muted-foreground">×{Number(item.quantity)}</span>
-                          )}
+                        <div className="flex items-center justify-between rounded-lg bg-muted/30 px-3 py-2 group">
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm">{item.emoji}</span>
+                            <span className="text-sm text-card-foreground">{item.food_name}</span>
+                            {Number(item.quantity) > 1 && (
+                              <span className="text-[10px] text-muted-foreground">×{Number(item.quantity)}</span>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs text-muted-foreground">{item.calories} kcal</span>
+                            <button
+                              onClick={() => deleteFoodLog.mutate(item.id)}
+                              className="opacity-0 group-hover:opacity-100 transition-opacity text-destructive"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs text-muted-foreground">{item.calories} kcal</span>
-                          <button
-                            onClick={() => deleteFoodLog.mutate(item.id)}
-                            className="opacity-0 group-hover:opacity-100 transition-opacity text-destructive"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      </div>
+                      </SwipeToDelete>
                     ))}
                   </div>
                 ) : (
@@ -198,6 +200,59 @@ function MacroBar({ label, value, max, unit, color, glowVar }: {
           className={`h-full rounded-full ${color} transition-all duration-500`}
           style={{ width: `${pct}%`, boxShadow: `0 0 8px hsl(var(${glowVar}) / 0.4)` }}
         />
+      </div>
+    </div>
+  );
+}
+
+function SwipeToDelete({ children, onDelete }: { children: React.ReactNode; onDelete: () => void }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const startX = useRef(0);
+  const currentX = useRef(0);
+  const [offsetX, setOffsetX] = useState(0);
+  const swiping = useRef(false);
+  const threshold = 80;
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    startX.current = e.touches[0].clientX;
+    swiping.current = true;
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!swiping.current) return;
+    currentX.current = e.touches[0].clientX;
+    const diff = Math.min(0, currentX.current - startX.current);
+    setOffsetX(diff);
+  };
+
+  const handleTouchEnd = () => {
+    swiping.current = false;
+    if (offsetX < -threshold) {
+      setOffsetX(-containerRef.current!.offsetWidth);
+      setTimeout(onDelete, 200);
+    } else {
+      setOffsetX(0);
+    }
+  };
+
+  return (
+    <div ref={containerRef} className="relative overflow-hidden rounded-lg">
+      <div
+        className="absolute inset-0 flex items-center justify-end px-4 bg-destructive"
+      >
+        <Trash2 className="w-4 h-4 text-destructive-foreground" />
+      </div>
+      <div
+        className="relative z-10 transition-transform"
+        style={{
+          transform: `translateX(${offsetX}px)`,
+          transitionDuration: swiping.current ? "0ms" : "200ms",
+        }}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
+        {children}
       </div>
     </div>
   );
