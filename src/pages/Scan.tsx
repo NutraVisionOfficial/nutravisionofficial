@@ -1,5 +1,6 @@
-import { useState, useCallback, useRef } from "react";
-import { Camera, ImagePlus, Loader2, ArrowLeft, Plus, ShieldAlert } from "lucide-react";
+import { useState, useCallback, useRef, useMemo } from "react";
+import { Camera, ImagePlus, Loader2, ArrowLeft, Plus, ShieldAlert, Minus } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAddFoodLog } from "@/hooks/useFoodLogs";
@@ -121,6 +122,8 @@ export default function Scan() {
   const [analyzing, setAnalyzing] = useState(false);
   const [result, setResult] = useState<ScanResult | null>(null);
   const [mealType, setMealType] = useState<string>("snack");
+  const [portion, setPortion] = useState("1 serving");
+  const [quantity, setQuantity] = useState(1);
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -218,31 +221,43 @@ export default function Scan() {
     e.target.value = "";
   }, [analyzeImage]);
 
+  const scaled = useMemo(() => {
+    if (!result) return null;
+    return {
+      calories: Math.round(result.calories * quantity),
+      protein: Math.round(result.protein * quantity),
+      carbs: Math.round(result.carbs * quantity),
+      fats: Math.round(result.fats * quantity),
+    };
+  }, [result, quantity]);
+
   const handleAddToDiary = useCallback(async () => {
-    if (!result) return;
+    if (!result || !scaled) return;
     try {
       await addFoodLog.mutateAsync({
         meal_type: mealType,
         food_name: result.name,
         emoji: "📸",
-        portion: "1 serving",
-        calories: result.calories,
-        protein: result.protein,
-        carbs: result.carbs,
-        fats: result.fats,
-        quantity: 1,
+        portion,
+        calories: scaled.calories,
+        protein: scaled.protein,
+        carbs: scaled.carbs,
+        fats: scaled.fats,
+        quantity,
       });
-      toast({ title: "Meal scanned and logged!", description: `${result.name} — ${result.calories} kcal added to your diary` });
+      toast({ title: "Meal scanned and logged!", description: `${result.name} — ${scaled.calories} kcal added to your diary` });
       navigate("/");
     } catch {
       toast({ variant: "destructive", title: "Error", description: "Failed to log food" });
     }
-  }, [result, addFoodLog, navigate, mealType]);
+  }, [result, scaled, addFoodLog, navigate, mealType, portion, quantity]);
 
   const handleReset = useCallback(() => {
     setResult(null);
     setAnalyzing(false);
     setMealType("snack");
+    setPortion("1 serving");
+    setQuantity(1);
   }, []);
 
   return (
@@ -284,19 +299,59 @@ export default function Scan() {
               </div>
             </div>
 
-            {/* Calories */}
+            {/* Calories (scaled) */}
             <div className="rounded-2xl border border-border bg-card p-4 text-center">
-              <p className="text-3xl font-extrabold font-display text-primary">{result.calories}</p>
-              <p className="text-xs text-muted-foreground mt-0.5">Estimated Calories</p>
+              <p className="text-3xl font-extrabold font-display text-primary">{scaled?.calories ?? result.calories}</p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Estimated Calories{quantity !== 1 && ` (×${quantity})`}
+              </p>
             </div>
 
-            {/* Macro Rings */}
+            {/* Macro Rings (scaled) */}
             <div className="rounded-2xl border border-border bg-card p-5">
               <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold mb-4">Macronutrients</p>
               <div className="flex justify-around">
-                <MacroRing value={result.protein} label="Protein" max={50} color="hsl(0, 80%, 60%)" />
-                <MacroRing value={result.carbs} label="Carbs" max={80} color="hsl(200, 70%, 55%)" />
-                <MacroRing value={result.fats} label="Fat" max={40} color="hsl(43, 96%, 56%)" />
+                <MacroRing value={scaled?.protein ?? result.protein} label="Protein" max={50} color="hsl(0, 80%, 60%)" />
+                <MacroRing value={scaled?.carbs ?? result.carbs} label="Carbs" max={80} color="hsl(200, 70%, 55%)" />
+                <MacroRing value={scaled?.fats ?? result.fats} label="Fat" max={40} color="hsl(43, 96%, 56%)" />
+              </div>
+            </div>
+
+            {/* Portion & Quantity */}
+            <div className="rounded-2xl border border-border bg-card p-4 space-y-4">
+              <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Portion & Quantity</p>
+              <div className="grid grid-cols-3 gap-2">
+                {["1 serving", "½ plate", "full plate"].map((p) => (
+                  <button
+                    key={p}
+                    onClick={() => setPortion(p)}
+                    className={`py-2 rounded-xl text-xs font-medium transition-all ${
+                      portion === p
+                        ? "bg-primary/15 text-primary border border-primary/30"
+                        : "bg-muted/50 text-muted-foreground border border-transparent hover:bg-muted"
+                    }`}
+                  >
+                    {p}
+                  </button>
+                ))}
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-foreground font-medium">Quantity</span>
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => setQuantity((q) => Math.max(0.5, q - 0.5))}
+                    className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center hover:bg-muted/80 transition-colors"
+                  >
+                    <Minus className="w-4 h-4 text-foreground" />
+                  </button>
+                  <span className="text-base font-bold text-foreground w-8 text-center">{quantity}</span>
+                  <button
+                    onClick={() => setQuantity((q) => q + 0.5)}
+                    className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center hover:bg-muted/80 transition-colors"
+                  >
+                    <Plus className="w-4 h-4 text-foreground" />
+                  </button>
+                </div>
               </div>
             </div>
 
