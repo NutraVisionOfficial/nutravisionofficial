@@ -1,8 +1,8 @@
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback, useRef } from "react";
 import { Camera, ImagePlus, Loader2, ArrowLeft, Plus, ShieldAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { useTodayLog, useUpsertLog } from "@/hooks/useDailyLogs";
+import { useAddFoodLog } from "@/hooks/useFoodLogs";
 import { toast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 
@@ -121,8 +121,7 @@ export default function Scan() {
   const [cameraError, setCameraError] = useState<string | null>(null);
 
   const navigate = useNavigate();
-  const { data: todayLog } = useTodayLog();
-  const upsertLog = useUpsertLog();
+  const addFoodLog = useAddFoodLog();
 
   const stopCamera = useCallback(() => {
     streamRef.current?.getTracks().forEach((t) => t.stop());
@@ -214,20 +213,23 @@ export default function Scan() {
   const handleAddToDiary = useCallback(async () => {
     if (!result) return;
     try {
-      await upsertLog.mutateAsync({
-        total_calories: (todayLog?.total_calories ?? 0) + result.calories,
-        protein: (todayLog?.protein ?? 0) + result.protein,
-        carbs: (todayLog?.carbs ?? 0) + result.carbs,
-        fats: (todayLog?.fats ?? 0) + result.fats,
-        workout_type: todayLog?.workout_type ?? "Rest",
-        workout_duration_mins: todayLog?.workout_duration_mins ?? 0,
+      await addFoodLog.mutateAsync({
+        meal_type: "snack",
+        food_name: result.name,
+        emoji: "📸",
+        portion: "1 serving",
+        calories: result.calories,
+        protein: result.protein,
+        carbs: result.carbs,
+        fats: result.fats,
+        quantity: 1,
       });
-      toast({ title: `Added ${result.name}`, description: `+${result.calories} kcal logged` });
+      toast({ title: "Meal scanned and logged!", description: `${result.name} — ${result.calories} kcal added to your diary` });
       navigate("/");
     } catch {
       toast({ variant: "destructive", title: "Error", description: "Failed to log food" });
     }
-  }, [result, todayLog, upsertLog, navigate]);
+  }, [result, addFoodLog, navigate]);
 
   const handleReset = useCallback(() => {
     setResult(null);
@@ -294,10 +296,10 @@ export default function Scan() {
               size="lg"
               className="w-full h-14 rounded-2xl text-base font-bold shadow-[0_0_30px_hsl(var(--primary)/0.3)]"
               onClick={handleAddToDiary}
-              disabled={upsertLog.isPending}
+              disabled={addFoodLog.isPending}
             >
               <Plus className="w-5 h-5 mr-2" />
-              {upsertLog.isPending ? "Adding..." : "Add to Diary"}
+              {addFoodLog.isPending ? "Adding..." : "Add to Diary"}
             </Button>
 
             <button

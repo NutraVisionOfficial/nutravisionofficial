@@ -43,6 +43,30 @@ export function useAddFoodLog() {
         .from("food_logs")
         .insert({ ...entry, user_id: user!.id, date: today });
       if (error) throw error;
+
+      // Recalculate and sync daily_logs totals
+      const { data: allLogs } = await supabase
+        .from("food_logs")
+        .select("calories, protein, carbs, fats")
+        .eq("user_id", user!.id)
+        .eq("date", today);
+
+      const totals = (allLogs || []).reduce(
+        (acc, r) => ({
+          total_calories: acc.total_calories + r.calories,
+          protein: acc.protein + Number(r.protein),
+          carbs: acc.carbs + Number(r.carbs),
+          fats: acc.fats + Number(r.fats),
+        }),
+        { total_calories: 0, protein: 0, carbs: 0, fats: 0 }
+      );
+
+      await supabase
+        .from("daily_logs")
+        .upsert(
+          { ...totals, user_id: user!.id, date: today },
+          { onConflict: "user_id,date" }
+        );
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["food_logs"] });
