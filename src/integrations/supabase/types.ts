@@ -227,6 +227,30 @@ export type Database = {
         }
         Relationships: []
       }
+      progress_photos: {
+        Row: {
+          created_at: string
+          estimated_body_fat: number
+          id: string
+          image_url: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          estimated_body_fat: number
+          id?: string
+          image_url?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          estimated_body_fat?: number
+          id?: string
+          image_url?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       weight_logs: {
         Row: {
           created_at: string
