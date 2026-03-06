@@ -110,9 +110,17 @@ function VerdictBadge({ verdict }: { verdict: string }) {
   );
 }
 
+const MEAL_TYPES = [
+  { value: "breakfast", emoji: "🌅", label: "Breakfast" },
+  { value: "lunch", emoji: "☀️", label: "Lunch" },
+  { value: "dinner", emoji: "🌙", label: "Dinner" },
+  { value: "snack", emoji: "🍿", label: "Snack" },
+] as const;
+
 export default function Scan() {
   const [analyzing, setAnalyzing] = useState(false);
   const [result, setResult] = useState<ScanResult | null>(null);
+  const [mealType, setMealType] = useState<string>("snack");
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -214,7 +222,7 @@ export default function Scan() {
     if (!result) return;
     try {
       await addFoodLog.mutateAsync({
-        meal_type: "snack",
+        meal_type: mealType,
         food_name: result.name,
         emoji: "📸",
         portion: "1 serving",
@@ -229,11 +237,12 @@ export default function Scan() {
     } catch {
       toast({ variant: "destructive", title: "Error", description: "Failed to log food" });
     }
-  }, [result, addFoodLog, navigate]);
+  }, [result, addFoodLog, navigate, mealType]);
 
   const handleReset = useCallback(() => {
     setResult(null);
     setAnalyzing(false);
+    setMealType("snack");
   }, []);
 
   return (
@@ -288,6 +297,27 @@ export default function Scan() {
                 <MacroRing value={result.protein} label="Protein" max={50} color="hsl(0, 80%, 60%)" />
                 <MacroRing value={result.carbs} label="Carbs" max={80} color="hsl(200, 70%, 55%)" />
                 <MacroRing value={result.fats} label="Fat" max={40} color="hsl(43, 96%, 56%)" />
+              </div>
+            </div>
+
+            {/* Meal Type Selector */}
+            <div className="rounded-2xl border border-border bg-card p-4">
+              <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold mb-3">Log as</p>
+              <div className="grid grid-cols-4 gap-2">
+                {MEAL_TYPES.map((mt) => (
+                  <button
+                    key={mt.value}
+                    onClick={() => setMealType(mt.value)}
+                    className={`flex flex-col items-center gap-1 py-2.5 rounded-xl text-xs font-medium transition-all ${
+                      mealType === mt.value
+                        ? "bg-primary/15 text-primary border border-primary/30 shadow-sm"
+                        : "bg-muted/50 text-muted-foreground border border-transparent hover:bg-muted"
+                    }`}
+                  >
+                    <span className="text-lg">{mt.emoji}</span>
+                    {mt.label}
+                  </button>
+                ))}
               </div>
             </div>
 
