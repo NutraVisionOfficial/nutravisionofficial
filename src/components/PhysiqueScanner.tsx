@@ -3,6 +3,7 @@ import { Camera, Upload, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useSavePhysiqueScan } from "@/hooks/usePhysiqueScans";
+import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 
 type ScanState = "idle" | "scanning" | "results";
@@ -20,6 +21,7 @@ export function PhysiqueScanner() {
   const [result, setResult] = useState<PhysiqueResult | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const saveScan = useSavePhysiqueScan();
+  const { session } = useAuth();
 
   const handleFile = useCallback(async (file: File) => {
     if (!file.type.startsWith("image/")) {
@@ -170,6 +172,35 @@ export function PhysiqueScanner() {
             disabled={saveScan.isPending}
             onClick={async () => {
               try {
+                const userId = session?.user?.id;
+                if (!userId) { toast.error("Please log in first"); return; }
+
+                // 1. Upload image to user_progress_images bucket
+                const fileName = `${userId}/${Date.now()}.jpg`;
+                const base64Data = preview.split(",")[1];
+                const byteArray = Uint8Array.from(atob(base64Data), (c) => c.charCodeAt(0));
+
+                const { error: uploadError } = await supabase.storage
+                  .from("user_progress_images")
+                  .upload(fileName, byteArray, { contentType: "image/jpeg", upsert: false });
+                if (uploadError) throw uploadError;
+
+                // 2. Get public URL
+                const { data: urlData } = supabase.storage
+                  .from("user_progress_images")
+                  .getPublicUrl(fileName);
+
+                // 3. Insert into progress_photos table
+                const { error: insertError } = await supabase
+                  .from("progress_photos" as any)
+                  .insert({
+                    user_id: userId,
+                    image_url: urlData.publicUrl,
+                    estimated_body_fat: result.body_fat_percentage,
+                  } as any);
+                if (insertError) throw insertError;
+
+                // 4. Also save to physique_scans (existing flow)
                 await saveScan.mutateAsync({
                   body_fat_percentage: result.body_fat_percentage,
                   category: result.category,
@@ -177,7 +208,8 @@ export function PhysiqueScanner() {
                   notes: result.notes,
                   photoBase64: preview,
                 });
-                toast.success("Logged to Progress Gallery");
+
+                toast.success("Progress securely saved to your gallery!");
                 reset();
               } catch (err: any) {
                 toast.error(err.message || "Failed to save");
