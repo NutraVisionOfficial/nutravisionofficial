@@ -1,9 +1,10 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
+    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
 interface MealPlanRequest {
@@ -19,6 +20,43 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
 
   try {
+    // Authenticate user
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return new Response(
+        JSON.stringify({ error: "Authentication required" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_ANON_KEY")!,
+      { global: { headers: { Authorization: authHeader } } }
+    );
+
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError || !user) {
+      return new Response(
+        JSON.stringify({ error: "Invalid authentication" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Server-side Pro subscription check
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("subscription_status")
+      .eq("user_id", user.id)
+      .single();
+
+    if (profile?.subscription_status !== "pro") {
+      return new Response(
+        JSON.stringify({ error: "Pro subscription required" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     const { dietType, allergies, cookingTime, mealsPerDay, calorieTarget } =
       (await req.json()) as MealPlanRequest;
 
@@ -95,15 +133,8 @@ You MUST respond using the generate_meal_plan tool.`;
                                 portion: { type: "string" },
                               },
                               required: [
-                                "slot",
-                                "name",
-                                "emoji",
-                                "calories",
-                                "protein",
-                                "carbs",
-                                "fats",
-                                "cook_time_mins",
-                                "portion",
+                                "slot", "name", "emoji", "calories", "protein",
+                                "carbs", "fats", "cook_time_mins", "portion",
                               ],
                               additionalProperties: false,
                             },

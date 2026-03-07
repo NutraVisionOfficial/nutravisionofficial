@@ -55,9 +55,8 @@ export function useSavePhysiqueScan() {
 
       if (uploadError) throw uploadError;
 
-      const { data: urlData } = supabase.storage
-        .from("physique-photos")
-        .getPublicUrl(fileName);
+      // Store the file path (not a public URL) since bucket is private
+      const filePath = fileName;
 
       const { error: insertError } = await supabase
         .from("physique_scans" as any)
@@ -67,7 +66,7 @@ export function useSavePhysiqueScan() {
           category: scan.category,
           muscle_mass: scan.muscle_mass,
           notes: scan.notes,
-          photo_url: urlData.publicUrl,
+          photo_url: filePath,
         } as any);
 
       if (insertError) throw insertError;

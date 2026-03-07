@@ -185,17 +185,13 @@ export function PhysiqueScanner() {
                   .upload(fileName, byteArray, { contentType: "image/jpeg", upsert: false });
                 if (uploadError) throw uploadError;
 
-                // 2. Get public URL
-                const { data: urlData } = supabase.storage
-                  .from("user_progress_images")
-                  .getPublicUrl(fileName);
-
+                // 2. Store file path (bucket is private, use signed URLs to view)
                 // 3. Insert into progress_photos table
                 const { error: insertError } = await supabase
                   .from("progress_photos" as any)
                   .insert({
                     user_id: userId,
-                    image_url: urlData.publicUrl,
+                    image_url: fileName,
                     estimated_body_fat: result.body_fat_percentage,
                   } as any);
                 if (insertError) throw insertError;

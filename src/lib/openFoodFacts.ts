@@ -9,9 +9,25 @@ export interface FoodProduct {
   barcode: string;
 }
 
+function sanitizeString(val: unknown, maxLen = 200): string {
+  if (typeof val !== "string") return "";
+  return val.replace(/<[^>]*>/g, "").substring(0, maxLen).trim();
+}
+
+function clampNumber(val: unknown, min = 0, max = 99999): number {
+  const n = Number(val);
+  if (isNaN(n)) return 0;
+  return Math.round(Math.max(min, Math.min(max, n)));
+}
+
 export async function fetchProductByBarcode(barcode: string): Promise<FoodProduct> {
+  // Validate barcode format (digits only, 8-14 chars)
+  if (!/^\d{8,14}$/.test(barcode)) {
+    throw new Error("Invalid barcode format.");
+  }
+
   const res = await fetch(
-    `https://world.openfoodfacts.org/api/v0/product/${barcode}.json`
+    `https://world.openfoodfacts.org/api/v0/product/${encodeURIComponent(barcode)}.json`
   );
 
   if (!res.ok) {
@@ -36,19 +52,19 @@ export async function fetchProductByBarcode(barcode: string): Promise<FoodProduc
   const fats =
     n["fat_serving"] ?? n["fat_100g"] ?? n["fat"] ?? 0;
 
-  const gradeRaw = (p.nutriscore_grade || p.nutrition_grades || "").toUpperCase();
+  const gradeRaw = (typeof p.nutriscore_grade === "string" ? p.nutriscore_grade : typeof p.nutrition_grades === "string" ? p.nutrition_grades : "").toUpperCase();
   const nutriScore = ["A", "B", "C", "D", "E"].includes(gradeRaw)
     ? (gradeRaw as FoodProduct["nutriScore"])
     : "unknown";
 
   return {
-    name: p.product_name || p.product_name_en || "Unknown Product",
-    calories: Math.round(Number(calories)),
-    protein: Math.round(Number(protein)),
-    carbs: Math.round(Number(carbs)),
-    fats: Math.round(Number(fats)),
+    name: sanitizeString(p.product_name || p.product_name_en) || "Unknown Product",
+    calories: clampNumber(calories, 0, 10000),
+    protein: clampNumber(protein, 0, 1000),
+    carbs: clampNumber(carbs, 0, 1000),
+    fats: clampNumber(fats, 0, 1000),
     nutriScore,
-    imageUrl: p.image_front_thumb_url || p.image_front_small_url || undefined,
+    imageUrl: typeof p.image_front_thumb_url === "string" ? p.image_front_thumb_url : typeof p.image_front_small_url === "string" ? p.image_front_small_url : undefined,
     barcode,
   };
 }
