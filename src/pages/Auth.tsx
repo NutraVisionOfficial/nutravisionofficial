@@ -25,6 +25,16 @@ export default function Auth() {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
       } else {
+        const validation = validatePassword(password);
+        if (!validation.isValid) {
+          toast({
+            title: "Weak password",
+            description: "Please meet all password requirements before signing up.",
+            variant: "destructive",
+          });
+          setLoading(false);
+          return;
+        }
         const { error } = await supabase.auth.signUp({
           email,
           password,
