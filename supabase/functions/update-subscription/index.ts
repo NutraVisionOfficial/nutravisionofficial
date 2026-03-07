@@ -13,32 +13,25 @@ serve(async (req) => {
   }
 
   try {
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader?.startsWith("Bearer ")) {
+    // Verify webhook secret – only payment provider webhooks should call this
+    const webhookSecret = Deno.env.get("PAYMENT_WEBHOOK_SECRET");
+    const providedSecret = req.headers.get("x-webhook-secret");
+
+    if (!webhookSecret || providedSecret !== webhookSecret) {
       return new Response(
-        JSON.stringify({ error: "Authentication required" }),
+        JSON.stringify({ error: "Unauthorized" }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Verify the user
-    const supabaseAuth = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_ANON_KEY")!,
-      { global: { headers: { Authorization: authHeader } } }
-    );
+    const { user_id, status } = await req.json();
 
-    const token = authHeader.replace("Bearer ", "");
-    const { data: claimsData, error: claimsError } = await supabaseAuth.auth.getClaims(token);
-    if (claimsError || !claimsData?.claims) {
+    if (!user_id || typeof user_id !== "string") {
       return new Response(
-        JSON.stringify({ error: "Invalid authentication" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({ error: "user_id is required" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
-
-    const userId = claimsData.claims.sub;
-    const { status } = await req.json();
 
     if (!status || !["pro", "free"].includes(status)) {
       return new Response(
@@ -47,7 +40,6 @@ serve(async (req) => {
       );
     }
 
-    // Use service role to bypass RLS restriction on subscription_status
     const supabaseAdmin = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
@@ -56,7 +48,7 @@ serve(async (req) => {
     const { error: updateError } = await supabaseAdmin
       .from("profiles")
       .update({ subscription_status: status })
-      .eq("user_id", userId);
+      .eq("user_id", user_id);
 
     if (updateError) {
       throw updateError;
@@ -68,9 +60,8 @@ serve(async (req) => {
     );
   } catch (e) {
     console.error("update-subscription error:", e);
-    const msg = e instanceof Error ? e.message : "Unknown error";
     return new Response(
-      JSON.stringify({ error: msg }),
+      JSON.stringify({ error: "Internal server error" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
