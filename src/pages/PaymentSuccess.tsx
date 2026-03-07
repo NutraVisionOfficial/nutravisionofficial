@@ -1,16 +1,11 @@
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
-import { toast } from "@/hooks/use-toast";
 import confetti from "canvas-confetti";
 
 export default function PaymentSuccess() {
   const navigate = useNavigate();
-  const { user } = useAuth();
-  const unlocked = useRef(false);
 
   useEffect(() => {
     // Fire confetti
@@ -23,21 +18,6 @@ export default function PaymentSuccess() {
     };
     frame();
   }, []);
-
-  useEffect(() => {
-    if (!user || unlocked.current) return;
-    unlocked.current = true;
-
-    supabase.functions
-      .invoke("update-subscription", { body: { status: "pro" } })
-      .then(({ error }) => {
-        if (error) {
-          toast({ title: "Error unlocking Pro", description: error.message, variant: "destructive" });
-        } else {
-          toast({ title: "Pro Features Unlocked Successfully 🔓" });
-        }
-      });
-  }, [user]);
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center px-4 text-center">
