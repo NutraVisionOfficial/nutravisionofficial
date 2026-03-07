@@ -1,6 +1,7 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { ArrowRight, TrendingDown, TrendingUp, Minus, Trash2 } from "lucide-react";
 import { usePhysiqueScans, useDeletePhysiqueScan } from "@/hooks/usePhysiqueScans";
+import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import {
@@ -26,6 +27,7 @@ export function BeforeAfterComparison() {
   const { data: scans, isLoading } = usePhysiqueScans();
   const deleteScan = useDeletePhysiqueScan();
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; label: string } | null>(null);
+  const [signedUrls, setSignedUrls] = useState<Record<string, string>>({});
 
   const { before, after, diff } = useMemo(() => {
     if (!scans || scans.length < 2) return { before: null, after: null, diff: 0 };
@@ -37,6 +39,30 @@ export function BeforeAfterComparison() {
       diff: +(last.body_fat_percentage - first.body_fat_percentage).toFixed(1),
     };
   }, [scans]);
+
+  // Generate signed URLs for before/after photos
+  useEffect(() => {
+    if (!before || !after) return;
+    const paths = [before.photo_url, after.photo_url].filter(Boolean);
+    if (paths.length === 0) return;
+
+    const fetchSignedUrls = async () => {
+      const urls: Record<string, string> = {};
+      for (const path of paths) {
+        // Skip if already a full URL (legacy public URL)
+        if (path.startsWith("http")) {
+          urls[path] = path;
+          continue;
+        }
+        const { data } = await supabase.storage
+          .from("physique-photos")
+          .createSignedUrl(path, 3600);
+        if (data?.signedUrl) urls[path] = data.signedUrl;
+      }
+      setSignedUrls(urls);
+    };
+    fetchSignedUrls();
+  }, [before, after]);
 
   const handleDelete = async () => {
     if (!deleteTarget) return;
@@ -87,7 +113,7 @@ export function BeforeAfterComparison() {
           {/* Before */}
           <div className="space-y-2">
             <div className="relative rounded-xl overflow-hidden aspect-[3/4] bg-muted group">
-              <img src={before.photo_url} alt="Before" className="w-full h-full object-cover" />
+              <img src={signedUrls[before.photo_url] || before.photo_url} alt="Before" className="w-full h-full object-cover" />
               <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-card/90 to-transparent p-3 pt-8">
                 <p className={`text-2xl font-bold font-display ${getColor(before.body_fat_percentage)}`}>
                   {before.body_fat_percentage}%
@@ -116,7 +142,7 @@ export function BeforeAfterComparison() {
           {/* After */}
           <div className="space-y-2">
             <div className="relative rounded-xl overflow-hidden aspect-[3/4] bg-muted group">
-              <img src={after.photo_url} alt="After" className="w-full h-full object-cover" />
+              <img src={signedUrls[after.photo_url] || after.photo_url} alt="After" className="w-full h-full object-cover" />
               <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-card/90 to-transparent p-3 pt-8">
                 <p className={`text-2xl font-bold font-display ${getColor(after.body_fat_percentage)}`}>
                   {after.body_fat_percentage}%
