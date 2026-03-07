@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Activity } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import PasswordStrengthIndicator, { validatePassword } from "@/components/PasswordStrengthIndicator";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
