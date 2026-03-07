@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Activity } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import PasswordStrengthIndicator, { validatePassword } from "@/components/PasswordStrengthIndicator";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
@@ -24,6 +25,16 @@ export default function Auth() {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
       } else {
+        const validation = validatePassword(password);
+        if (!validation.isValid) {
+          toast({
+            title: "Weak password",
+            description: "Please meet all password requirements before signing up.",
+            variant: "destructive",
+          });
+          setLoading(false);
+          return;
+        }
         const { error } = await supabase.auth.signUp({
           email,
           password,
@@ -79,6 +90,7 @@ export default function Auth() {
             <div>
               <Label htmlFor="password">Password</Label>
               <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required minLength={6} className="mt-1" />
+              {!isLogin && <PasswordStrengthIndicator password={password} />}
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? "Loading..." : isLogin ? "Sign in" : "Sign up"}
