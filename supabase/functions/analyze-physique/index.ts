@@ -43,6 +43,15 @@ serve(async (req) => {
       );
     }
 
+    // Validate image size (max ~5 MB base64)
+    const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+    if (typeof imageBase64 !== "string" || imageBase64.length > MAX_IMAGE_BYTES) {
+      return new Response(
+        JSON.stringify({ error: "Image too large. Maximum size is 5 MB." }),
+        { status: 413, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     let imageUrl = imageBase64;
     if (!imageUrl.startsWith("data:image/")) {
       imageUrl = `data:image/jpeg;base64,${imageUrl}`;
