@@ -83,7 +83,7 @@ export default function Upgrade() {
             Unlock Your Full Potential
           </h2>
           <p className="text-white/50 text-base md:text-lg max-w-md mx-auto">
-            Premium tools to accelerate your 3-year transformation.
+            Premium tools to accelerate your 1-year transformation.
           </p>
         </div>
 
