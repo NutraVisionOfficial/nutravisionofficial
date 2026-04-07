@@ -40,7 +40,14 @@ export function WeeklyHabitTracker({ logs }: WeeklyHabitTrackerProps) {
   return (
     <div className="rounded-xl border border-border bg-card p-5 animate-fade-in"
          style={{ background: "hsl(var(--card))" }}>
-      <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">This Week</h3>
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">This Week</h3>
+        <div className="flex items-center gap-4">
+          <Legend color="bg-[hsl(142,71%,45%)]" label="Calories" />
+          <Legend color="bg-[hsl(217,91%,60%)]" label="Workout" />
+          <Legend color="bg-[hsl(270,70%,60%)]" label="Weight" />
+        </div>
+      </div>
       <div className="flex justify-between gap-1">
         {weekDates.map((date, i) => {
           const log = logMap[date];
@@ -54,7 +61,7 @@ export function WeeklyHabitTracker({ logs }: WeeklyHabitTrackerProps) {
               <PopoverTrigger asChild>
                 <button
                   className={cn(
-                    "flex-1 flex flex-col items-center gap-1.5 py-2 px-1 rounded-lg transition-all cursor-pointer",
+                    "flex-1 flex flex-col items-center gap-2 py-2.5 px-1 rounded-lg transition-all cursor-pointer",
                     "hover:bg-muted/40",
                     isToday && "ring-1 ring-primary/60 shadow-[0_0_8px_hsl(var(--primary)/0.25)]"
                   )}
@@ -65,7 +72,7 @@ export function WeeklyHabitTracker({ logs }: WeeklyHabitTrackerProps) {
                   )}>
                     {DAY_LABELS[i]}
                   </span>
-                  <div className="flex flex-col gap-1.5 items-center">
+                  <div className="flex gap-1.5 items-center">
                     <Dot active={hasCalories} color="bg-[hsl(142,71%,45%)]" />
                     <Dot active={hasWorkout} color="bg-[hsl(217,91%,60%)]" />
                     <Dot active={hasWeight} color="bg-[hsl(270,70%,60%)]" />
@@ -85,11 +92,6 @@ export function WeeklyHabitTracker({ logs }: WeeklyHabitTrackerProps) {
             </Popover>
           );
         })}
-      </div>
-      <div className="flex items-center gap-4 mt-3 pt-3 border-t border-border">
-        <Legend color="bg-[hsl(142,71%,45%)]" label="Calories" />
-        <Legend color="bg-[hsl(217,91%,60%)]" label="Workout" />
-        <Legend color="bg-[hsl(270,70%,60%)]" label="Weight" />
       </div>
     </div>
   );
