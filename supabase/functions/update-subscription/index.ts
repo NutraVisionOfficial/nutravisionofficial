@@ -8,25 +8,95 @@ const corsHeaders = {
 };
 
 /**
- * Validates a PayPal webhook notification by calling the PayPal
- * Webhook Notifications Verify API.
- * Returns true when PayPal confirms the event is genuine.
- * Falls back to shared-secret verification when PayPal credentials
- * are not configured yet.
+ * Obtain a PayPal OAuth2 access token using client credentials.
+ */
+async function getPayPalAccessToken(): Promise<string> {
+  const clientId = Deno.env.get("PAYPAL_CLIENT_ID")!;
+  const clientSecret = Deno.env.get("PAYPAL_CLIENT_SECRET")!;
+  const base = "https://api-m.paypal.com";
+
+  const res = await fetch(`${base}/v1/oauth2/token`, {
+    method: "POST",
+    headers: {
+      Authorization: `Basic ${btoa(`${clientId}:${clientSecret}`)}`,
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    body: "grant_type=client_credentials",
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`PayPal token request failed: ${res.status} ${text}`);
+  }
+
+  const data = await res.json();
+  return data.access_token;
+}
+
+/**
+ * Verify a PayPal webhook event using the PayPal Webhook
+ * Notifications Verify API (cryptographic signature check).
  */
 async function verifyPayPalWebhook(
   req: Request,
   body: Record<string, unknown>
 ): Promise<boolean> {
-  // --- Primary: shared webhook secret (always required) ---
-  const webhookSecret = Deno.env.get("PAYMENT_WEBHOOK_SECRET");
-  const providedSecret = req.headers.get("x-webhook-secret");
+  const webhookId = Deno.env.get("PAYPAL_WEBHOOK_ID");
+  const clientId = Deno.env.get("PAYPAL_CLIENT_ID");
+  const clientSecret = Deno.env.get("PAYPAL_CLIENT_SECRET");
 
-  if (!webhookSecret || providedSecret !== webhookSecret) {
+  if (!webhookId || !clientId || !clientSecret) {
+    console.error("PayPal credentials not configured for webhook verification");
     return false;
   }
 
-  return true;
+  const transmissionId = req.headers.get("paypal-transmission-id");
+  const transmissionTime = req.headers.get("paypal-transmission-time");
+  const transmissionSig = req.headers.get("paypal-transmission-sig");
+  const certUrl = req.headers.get("paypal-cert-url");
+  const authAlgo = req.headers.get("paypal-auth-algo");
+
+  if (!transmissionId || !transmissionTime || !transmissionSig || !certUrl || !authAlgo) {
+    console.error("Missing PayPal signature headers");
+    return false;
+  }
+
+  try {
+    const accessToken = await getPayPalAccessToken();
+    const base = "https://api-m.paypal.com";
+
+    const verifyRes = await fetch(
+      `${base}/v1/notifications/verify-webhook-signature`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          auth_algo: authAlgo,
+          cert_url: certUrl,
+          transmission_id: transmissionId,
+          transmission_sig: transmissionSig,
+          transmission_time: transmissionTime,
+          webhook_id: webhookId,
+          webhook_event: body,
+        }),
+      }
+    );
+
+    if (!verifyRes.ok) {
+      const text = await verifyRes.text();
+      console.error(`PayPal verify API error: ${verifyRes.status} ${text}`);
+      return false;
+    }
+
+    const result = await verifyRes.json();
+    return result.verification_status === "SUCCESS";
+  } catch (err) {
+    console.error("PayPal webhook verification failed:", err);
+    return false;
+  }
 }
 
 /**
@@ -57,7 +127,7 @@ serve(async (req) => {
   try {
     const body = await req.json();
 
-    // 1. Verify webhook authenticity
+    // 1. Verify webhook authenticity via PayPal cryptographic signature
     const verified = await verifyPayPalWebhook(req, body);
     if (!verified) {
       return new Response(
@@ -69,7 +139,7 @@ serve(async (req) => {
       );
     }
 
-    // 2. Validate event structure — must be a PayPal-style event
+    // 2. Validate event structure
     const eventType = body.event_type;
     if (typeof eventType !== "string") {
       return new Response(
@@ -100,7 +170,6 @@ serve(async (req) => {
     } else if (cancellationEvents.includes(eventType)) {
       newStatus = "free";
     } else {
-      // Event type we don't handle — acknowledge receipt
       return new Response(
         JSON.stringify({ received: true, ignored: true }),
         {
@@ -110,7 +179,7 @@ serve(async (req) => {
       );
     }
 
-    // 4. Resolve the user — prefer custom_id (user_id), fall back to email
+    // 4. Resolve the user
     const { email, customId } = extractSubscriberInfo(body);
 
     const supabaseAdmin = createClient(
@@ -121,7 +190,6 @@ serve(async (req) => {
     let userId: string | null = customId;
 
     if (!userId && email) {
-      // Look up by email in auth.users
       const { data: users, error: listErr } =
         await supabaseAdmin.auth.admin.listUsers();
       if (!listErr && users?.users) {
