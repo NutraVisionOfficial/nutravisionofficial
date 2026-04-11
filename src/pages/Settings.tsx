@@ -106,7 +106,7 @@ export default function Settings() {
           </div>
           <div className="text-center">
             <h2 className="text-xl font-bold font-display text-foreground">
-              Welcome, {name || "Stride User"}
+              Welcome, {name || "NutraVision User"}
             </h2>
             <p className="text-sm text-muted-foreground mt-0.5">Set your goals and let us handle the math</p>
           </div>

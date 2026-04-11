@@ -73,8 +73,8 @@ const Index = () => {
               <Activity className="w-5 h-5 text-primary-foreground" />
             </div>
             <div>
-              <h1 className="text-lg font-bold font-display text-foreground">Stride</h1>
-              <p className="text-xs text-muted-foreground">Your long-term fitness companion</p>
+              <h1 className="text-lg font-bold font-display text-foreground">NutraVision</h1>
+              <p className="text-xs text-muted-foreground">Your long-term AI nutrition companion</p>
             </div>
           </div>
           <div className="flex items-center gap-2">

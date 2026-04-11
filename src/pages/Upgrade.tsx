@@ -69,7 +69,7 @@ export default function Upgrade() {
           >
             <ArrowLeft className="w-5 h-5 text-white/70" />
           </button>
-          <h1 className="text-lg font-bold font-display">Stride Pro</h1>
+          <h1 className="text-lg font-bold font-display">NutraVision Pro</h1>
         </div>
       </header>
 

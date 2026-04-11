@@ -67,8 +67,8 @@ export default function Auth() {
           <div className="w-12 h-12 rounded-xl bg-primary flex items-center justify-center mx-auto">
             <Activity className="w-6 h-6 text-primary-foreground" />
           </div>
-          <h1 className="text-2xl font-bold font-display text-foreground">Stride</h1>
-          <p className="text-sm text-muted-foreground">Your long-term fitness companion</p>
+          <h1 className="text-2xl font-bold font-display text-foreground">NutraVision</h1>
+          <p className="text-sm text-muted-foreground">Your long-term AI nutrition companion</p>
         </div>
 
         <div className="rounded-xl border border-border bg-card p-6">
