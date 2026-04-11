@@ -55,7 +55,7 @@ export function ProPaywall({ open, onClose }: ProPaywallProps) {
           {/* header */}
           <div className="text-center space-y-2">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gold/15 text-gold text-xs font-semibold tracking-wide uppercase">
-              <Sparkles className="w-3.5 h-3.5" /> Stride Pro
+              <Sparkles className="w-3.5 h-3.5" /> NutraVision Pro
             </div>
             <h2 className="text-3xl font-bold font-display">
               Unlock Your Full Potential
