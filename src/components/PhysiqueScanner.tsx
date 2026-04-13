@@ -54,9 +54,8 @@ export function PhysiqueScanner() {
         setState("results");
       } catch (err: any) {
         console.error(err);
-        toast.error(err.message || "Analysis failed");
-        setState("idle");
-        setPreview(null);
+        setErrorMsg(err.message || "Analysis failed. Please try again.");
+        setState("error");
       }
     };
     reader.readAsDataURL(file);
