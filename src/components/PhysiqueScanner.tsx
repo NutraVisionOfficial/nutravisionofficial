@@ -1,12 +1,12 @@
 import { useState, useRef, useCallback } from "react";
-import { Camera, Upload, RotateCcw } from "lucide-react";
+import { Camera, Upload, RotateCcw, AlertTriangle, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useSavePhysiqueScan } from "@/hooks/usePhysiqueScans";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 
-type ScanState = "idle" | "scanning" | "results";
+type ScanState = "idle" | "scanning" | "error" | "results";
 
 interface PhysiqueResult {
   body_fat_percentage: number;
@@ -19,6 +19,7 @@ export function PhysiqueScanner() {
   const [state, setState] = useState<ScanState>("idle");
   const [preview, setPreview] = useState<string | null>(null);
   const [result, setResult] = useState<PhysiqueResult | null>(null);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const saveScan = useSavePhysiqueScan();
   const { session } = useAuth();
@@ -42,9 +43,8 @@ export function PhysiqueScanner() {
 
         if (error) throw error;
         if (data?.error) {
-          toast.error(data.error);
-          setState("idle");
-          setPreview(null);
+          setErrorMsg(data.error);
+          setState("error");
           return;
         }
 
@@ -54,9 +54,8 @@ export function PhysiqueScanner() {
         setState("results");
       } catch (err: any) {
         console.error(err);
-        toast.error(err.message || "Analysis failed");
-        setState("idle");
-        setPreview(null);
+        setErrorMsg(err.message || "Analysis failed. Please try again.");
+        setState("error");
       }
     };
     reader.readAsDataURL(file);
@@ -66,6 +65,7 @@ export function PhysiqueScanner() {
     setState("idle");
     setPreview(null);
     setResult(null);
+    setErrorMsg(null);
   };
 
   const getColor = (pct: number) => {
@@ -130,6 +130,39 @@ export function PhysiqueScanner() {
               <p className="text-sm font-medium text-card-foreground animate-pulse">
                 AI is analyzing physique...
               </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ERROR: Inline error with retry */}
+      {state === "error" && (
+        <div className="space-y-4">
+          {preview && (
+            <div className="relative w-full rounded-xl overflow-hidden">
+              <img src={preview} alt="Uploaded" className="w-full h-48 object-cover rounded-xl opacity-40" />
+              <div className="absolute inset-0 bg-gradient-to-t from-card via-card/70 to-card/30" />
+            </div>
+          )}
+          <div className="flex flex-col items-center gap-3 py-4">
+            <div className="w-12 h-12 rounded-full bg-destructive/10 flex items-center justify-center">
+              <AlertTriangle className="w-6 h-6 text-destructive" />
+            </div>
+            <div className="text-center space-y-1">
+              <p className="text-sm font-semibold text-card-foreground">Analysis couldn't be completed</p>
+              <p className="text-xs text-muted-foreground max-w-[260px]">
+                {errorMsg || "Something went wrong. Please try again with a different photo."}
+              </p>
+            </div>
+            <div className="flex gap-2 w-full">
+              <Button variant="outline" size="sm" className="flex-1" onClick={reset}>
+                <RefreshCw className="w-3.5 h-3.5 mr-1.5" />
+                Try Another Photo
+              </Button>
+              <Button size="sm" className="flex-1" onClick={() => { setErrorMsg(null); setState("idle"); }}>
+                <Camera className="w-3.5 h-3.5 mr-1.5" />
+                Retry
+              </Button>
             </div>
           </div>
         </div>
