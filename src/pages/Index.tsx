@@ -139,6 +139,36 @@ const Index = () => {
 
             <PhysiqueScanner />
 
+            <div className="rounded-xl border border-border bg-card p-5 animate-fade-in">
+              <h3 className="text-sm font-semibold font-display text-card-foreground mb-2">❓ Body Fat Estimator FAQ</h3>
+              <Accordion type="single" collapsible className="w-full">
+                <AccordionItem value="accuracy" className="border-border/50">
+                  <AccordionTrigger className="text-xs text-muted-foreground hover:text-foreground py-2.5">How accurate is the AI estimate?</AccordionTrigger>
+                  <AccordionContent className="text-xs text-muted-foreground/80 leading-relaxed">
+                    The AI provides a visual estimate typically within ±3-5% of DEXA scan results. Accuracy improves with good lighting, a front-facing pose, and minimal clothing. It's great for tracking trends over time but should not replace professional body composition testing.
+                  </AccordionContent>
+                </AccordionItem>
+                <AccordionItem value="photo-tips" className="border-border/50">
+                  <AccordionTrigger className="text-xs text-muted-foreground hover:text-foreground py-2.5">What makes a good photo for analysis?</AccordionTrigger>
+                  <AccordionContent className="text-xs text-muted-foreground/80 leading-relaxed">
+                    Use a well-lit room with even lighting (avoid harsh shadows). Stand facing the camera with arms slightly away from your body. A plain, uncluttered background helps the AI focus on your physique. Wear form-fitting clothes or swimwear for the best results.
+                  </AccordionContent>
+                </AccordionItem>
+                <AccordionItem value="privacy" className="border-border/50">
+                  <AccordionTrigger className="text-xs text-muted-foreground hover:text-foreground py-2.5">Are my photos stored securely?</AccordionTrigger>
+                  <AccordionContent className="text-xs text-muted-foreground/80 leading-relaxed">
+                    Yes. All photos are stored in a private, encrypted bucket accessible only to your account. Images are transmitted securely and are never shared with third parties or used for training purposes.
+                  </AccordionContent>
+                </AccordionItem>
+                <AccordionItem value="frequency" className="border-border/50 border-b-0">
+                  <AccordionTrigger className="text-xs text-muted-foreground hover:text-foreground py-2.5">How often should I scan?</AccordionTrigger>
+                  <AccordionContent className="text-xs text-muted-foreground/80 leading-relaxed">
+                    We recommend scanning every 2-4 weeks under similar conditions (same time of day, lighting, and pose). This gives you consistent data points to track real progress without day-to-day fluctuations.
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
+            </div>
+
             <BeforeAfterComparison />
 
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
