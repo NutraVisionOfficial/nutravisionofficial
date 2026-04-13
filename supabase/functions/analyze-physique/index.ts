@@ -119,8 +119,8 @@ If no person is visible: {"error":"No person detected in image"}`,
 
     if (parsed.error) {
       return new Response(
-        JSON.stringify({ error: parsed.error }),
-        { status: 422, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({ ok: false, error: parsed.error }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
