@@ -19,6 +19,7 @@ export function PhysiqueScanner() {
   const [state, setState] = useState<ScanState>("idle");
   const [preview, setPreview] = useState<string | null>(null);
   const [result, setResult] = useState<PhysiqueResult | null>(null);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const saveScan = useSavePhysiqueScan();
   const { session } = useAuth();
