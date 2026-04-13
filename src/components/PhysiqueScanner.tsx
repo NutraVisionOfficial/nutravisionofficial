@@ -65,6 +65,7 @@ export function PhysiqueScanner() {
     setState("idle");
     setPreview(null);
     setResult(null);
+    setErrorMsg(null);
   };
 
   const getColor = (pct: number) => {
