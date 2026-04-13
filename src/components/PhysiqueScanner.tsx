@@ -43,9 +43,8 @@ export function PhysiqueScanner() {
 
         if (error) throw error;
         if (data?.error) {
-          toast.error(data.error);
-          setState("idle");
-          setPreview(null);
+          setErrorMsg(data.error);
+          setState("error");
           return;
         }
 
