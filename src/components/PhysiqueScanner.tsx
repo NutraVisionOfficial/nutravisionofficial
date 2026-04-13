@@ -95,18 +95,25 @@ export function PhysiqueScanner() {
 
       {/* IDLE: Upload dropzone */}
       {state === "idle" && (
-        <button
-          onClick={() => fileRef.current?.click()}
-          className="w-full rounded-xl border-2 border-dashed border-border bg-muted/20 hover:bg-muted/40 hover:border-primary/40 transition-all cursor-pointer flex flex-col items-center justify-center gap-3 py-12"
-        >
-          <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center">
-            <Camera className="w-7 h-7 text-primary" />
+        <>
+          <button
+            onClick={() => fileRef.current?.click()}
+            className="w-full rounded-xl border-2 border-dashed border-border bg-muted/20 hover:bg-muted/40 hover:border-primary/40 transition-all cursor-pointer flex flex-col items-center justify-center gap-3 py-12"
+          >
+            <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center">
+              <Camera className="w-7 h-7 text-primary" />
+            </div>
+            <div className="text-center">
+              <p className="text-sm font-medium text-card-foreground">📸 Upload Front-Facing Photo</p>
+              <p className="text-xs text-muted-foreground mt-1">JPG or PNG, best results with good lighting</p>
+            </div>
+          </button>
+          <div className="mt-3 flex items-start gap-2 px-1">
+            <span className="text-[10px] leading-relaxed text-muted-foreground/70">
+              💡 <span className="font-medium text-muted-foreground">Tip:</span> Stand in front of a plain background with even lighting. Face the camera directly, arms slightly away from your body, for the most accurate estimate.
+            </span>
           </div>
-          <div className="text-center">
-            <p className="text-sm font-medium text-card-foreground">📸 Upload Front-Facing Photo</p>
-            <p className="text-xs text-muted-foreground mt-1">JPG or PNG, best results with good lighting</p>
-          </div>
-        </button>
+        </>
       )}
 
       {/* SCANNING: Photo with laser overlay */}
