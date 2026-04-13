@@ -107,6 +107,11 @@ export function PhysiqueScanner() {
             <p className="text-xs text-muted-foreground mt-1">JPG or PNG, best results with good lighting</p>
           </div>
         </button>
+        <div className="mt-3 flex items-start gap-2 px-1">
+          <span className="text-[10px] leading-relaxed text-muted-foreground/70">
+            💡 <span className="font-medium text-muted-foreground">Tip:</span> Stand in front of a plain background with even lighting. Face the camera directly, arms slightly away from your body, for the most accurate estimate.
+          </span>
+        </div>
       )}
 
       {/* SCANNING: Photo with laser overlay */}
