@@ -1,12 +1,12 @@
 import { useState, useRef, useCallback } from "react";
-import { Camera, Upload, RotateCcw } from "lucide-react";
+import { Camera, Upload, RotateCcw, AlertTriangle, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useSavePhysiqueScan } from "@/hooks/usePhysiqueScans";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 
-type ScanState = "idle" | "scanning" | "results";
+type ScanState = "idle" | "scanning" | "error" | "results";
 
 interface PhysiqueResult {
   body_fat_percentage: number;
