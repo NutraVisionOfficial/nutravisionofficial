@@ -169,6 +169,35 @@ const Index = () => {
               </Accordion>
             </div>
 
+            <div className="rounded-xl border border-border bg-card p-5 animate-fade-in">
+              <h3 className="text-sm font-semibold font-display text-card-foreground mb-3">📊 AI vs Clinical Body Composition Methods</h3>
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div className="rounded-lg bg-primary/5 border border-primary/10 p-4 space-y-2">
+                  <p className="text-xs font-semibold text-primary">🤖 AI Visual Estimate</p>
+                  <ul className="text-[11px] text-muted-foreground space-y-1.5 leading-relaxed">
+                    <li>• Accuracy: ±3–5% body fat</li>
+                    <li>• Cost: Free (included with Pro)</li>
+                    <li>• Speed: Results in seconds</li>
+                    <li>• Convenience: Anytime, anywhere</li>
+                    <li>• Best for: Tracking trends over time</li>
+                  </ul>
+                </div>
+                <div className="rounded-lg bg-accent/5 border border-accent/10 p-4 space-y-2">
+                  <p className="text-xs font-semibold text-accent">🏥 DEXA Scan (Clinical)</p>
+                  <ul className="text-[11px] text-muted-foreground space-y-1.5 leading-relaxed">
+                    <li>• Accuracy: ±1–2% body fat</li>
+                    <li>• Cost: $75–$200 per scan</li>
+                    <li>• Speed: 15–30 min appointment</li>
+                    <li>• Convenience: Requires clinic visit</li>
+                    <li>• Best for: Precise baseline measurements</li>
+                  </ul>
+                </div>
+              </div>
+              <p className="text-[10px] text-muted-foreground/60 mt-3 leading-relaxed">
+                💡 <span className="font-medium">Pro tip:</span> Use AI estimates for weekly tracking and get a DEXA scan every 3–6 months to calibrate your baseline. Together, they give you the full picture.
+              </p>
+            </div>
+
             <BeforeAfterComparison />
 
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
