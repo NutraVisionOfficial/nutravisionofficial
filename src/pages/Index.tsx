@@ -22,6 +22,7 @@ import { FoodScanner } from "@/components/FoodScanner";
 import { WeeklyHabitTracker } from "@/components/WeeklyHabitTracker";
 import { WeightLogWidget } from "@/components/WeightLogWidget";
 import { WaterIntakeTracker } from "@/components/WaterIntakeTracker";
+import { WaterWeeklyChart } from "@/components/WaterWeeklyChart";
 import { PhysiqueScanner } from "@/components/PhysiqueScanner";
 import { BeforeAfterComparison } from "@/components/BeforeAfterComparison";
 import { useAuth } from "@/hooks/useAuth";
@@ -212,6 +213,8 @@ const Index = () => {
               <WeightLogWidget />
               <WaterIntakeTracker />
             </div>
+
+            <WaterWeeklyChart />
 
             <MealPlannerCard isPro={isPro} />
 
