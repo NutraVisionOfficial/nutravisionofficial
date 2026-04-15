@@ -21,6 +21,7 @@ import { MealPlannerCard } from "@/components/MealPlannerCard";
 import { FoodScanner } from "@/components/FoodScanner";
 import { WeeklyHabitTracker } from "@/components/WeeklyHabitTracker";
 import { WeightLogWidget } from "@/components/WeightLogWidget";
+import { WaterIntakeTracker } from "@/components/WaterIntakeTracker";
 import { PhysiqueScanner } from "@/components/PhysiqueScanner";
 import { BeforeAfterComparison } from "@/components/BeforeAfterComparison";
 import { useAuth } from "@/hooks/useAuth";
