@@ -23,6 +23,7 @@ import { WeeklyHabitTracker } from "@/components/WeeklyHabitTracker";
 import { WeightLogWidget } from "@/components/WeightLogWidget";
 import { WaterIntakeTracker } from "@/components/WaterIntakeTracker";
 import { WaterWeeklyChart } from "@/components/WaterWeeklyChart";
+import { StepCounterWidget } from "@/components/StepCounterWidget";
 import { PhysiqueScanner } from "@/components/PhysiqueScanner";
 import { BeforeAfterComparison } from "@/components/BeforeAfterComparison";
 import { useAuth } from "@/hooks/useAuth";
@@ -214,7 +215,10 @@ const Index = () => {
               <WaterIntakeTracker />
             </div>
 
-            <WaterWeeklyChart />
+            <div className="grid lg:grid-cols-2 gap-4">
+              <StepCounterWidget />
+              <WaterWeeklyChart />
+            </div>
 
             <MealPlannerCard isPro={isPro} />
 
