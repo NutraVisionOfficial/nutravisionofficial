@@ -40,3 +40,24 @@ export function useUpsertWater() {
     },
   });
 }
+
+export function useWeeklyWater() {
+  const { user } = useAuth();
+  return useQuery({
+    queryKey: ["water_intake_weekly", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
+      const from = sevenDaysAgo.toISOString().split("T")[0];
+      const { data, error } = await supabase
+        .from("water_intake")
+        .select("date, glasses")
+        .eq("user_id", user!.id)
+        .gte("date", from)
+        .order("date");
+      if (error) throw error;
+      return data;
+    },
+  });
+}
