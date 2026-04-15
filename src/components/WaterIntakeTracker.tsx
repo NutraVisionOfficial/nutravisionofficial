@@ -1,13 +1,20 @@
-import { useState } from "react";
 import { Droplets, Plus, Minus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { useTodayWater, useUpsertWater } from "@/hooks/useWaterIntake";
 
 const GOAL_GLASSES = 8;
 const ML_PER_GLASS = 250;
 
 export function WaterIntakeTracker() {
-  const [glasses, setGlasses] = useState(0);
+  const { data: record } = useTodayWater();
+  const upsert = useUpsertWater();
+  const glasses = record?.glasses ?? 0;
+
+  const update = (delta: number) => {
+    const next = Math.max(0, glasses + delta);
+    upsert.mutate(next);
+  };
 
   const progress = Math.min(100, (glasses / GOAL_GLASSES) * 100);
   const totalMl = glasses * ML_PER_GLASS;
@@ -29,8 +36,8 @@ export function WaterIntakeTracker() {
             variant="outline"
             size="icon"
             className="h-7 w-7"
-            onClick={() => setGlasses((g) => Math.max(0, g - 1))}
-            disabled={glasses === 0}
+            onClick={() => update(-1)}
+            disabled={glasses === 0 || upsert.isPending}
           >
             <Minus className="w-3.5 h-3.5" />
           </Button>
@@ -39,7 +46,8 @@ export function WaterIntakeTracker() {
             variant="outline"
             size="icon"
             className="h-7 w-7"
-            onClick={() => setGlasses((g) => g + 1)}
+            onClick={() => update(1)}
+            disabled={upsert.isPending}
           >
             <Plus className="w-3.5 h-3.5" />
           </Button>
