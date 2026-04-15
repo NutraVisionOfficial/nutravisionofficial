@@ -208,7 +208,10 @@ const Index = () => {
               <StatCard label="Active Streak" value={`${streak ?? 0} days`} subtitle="Keep it up!" icon="streak" variant="accent" />
             </div>
 
-            <WeightLogWidget />
+            <div className="grid lg:grid-cols-2 gap-4">
+              <WeightLogWidget />
+              <WaterIntakeTracker />
+            </div>
 
             <MealPlannerCard isPro={isPro} />
 
