@@ -21,6 +21,7 @@ import { MealPlannerCard } from "@/components/MealPlannerCard";
 import { FoodScanner } from "@/components/FoodScanner";
 import { WeeklyHabitTracker } from "@/components/WeeklyHabitTracker";
 import { WeightLogWidget } from "@/components/WeightLogWidget";
+import { WaterIntakeTracker } from "@/components/WaterIntakeTracker";
 import { PhysiqueScanner } from "@/components/PhysiqueScanner";
 import { BeforeAfterComparison } from "@/components/BeforeAfterComparison";
 import { useAuth } from "@/hooks/useAuth";
@@ -207,7 +208,10 @@ const Index = () => {
               <StatCard label="Active Streak" value={`${streak ?? 0} days`} subtitle="Keep it up!" icon="streak" variant="accent" />
             </div>
 
-            <WeightLogWidget />
+            <div className="grid lg:grid-cols-2 gap-4">
+              <WeightLogWidget />
+              <WaterIntakeTracker />
+            </div>
 
             <MealPlannerCard isPro={isPro} />
 
