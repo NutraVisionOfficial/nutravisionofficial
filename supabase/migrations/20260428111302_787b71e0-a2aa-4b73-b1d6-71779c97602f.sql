@@ -1,0 +1,2 @@
+ALTER TABLE public.profiles
+ADD COLUMN IF NOT EXISTS region TEXT NOT NULL DEFAULT 'India';
