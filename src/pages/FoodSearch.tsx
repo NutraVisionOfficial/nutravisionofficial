@@ -161,6 +161,28 @@ export default function FoodSearch() {
     }
   }, [selectedFood, quantity, mealType, todayLog, upsertLog, addFoodLog]);
 
+  const handleSaveFood = useCallback(async () => {
+    if (!selectedFood) return;
+    try {
+      await saveFood.mutateAsync({
+        food_name: selectedFood.name,
+        emoji: selectedFood.emoji,
+        portion: selectedFood.portion,
+        calories: Math.round(selectedFood.calories * quantity),
+        protein: Math.round(selectedFood.protein * quantity),
+        carbs: Math.round(selectedFood.carbs * quantity),
+        fats: Math.round(selectedFood.fats * quantity),
+      });
+      toast({ title: `Saved ${selectedFood.emoji} ${selectedFood.name}`, description: "Available in My Saved Foods" });
+    } catch {
+      toast({ title: "Error", description: "Failed to save food", variant: "destructive" });
+    }
+  }, [selectedFood, quantity, saveFood]);
+
+  const isAlreadySaved = !!selectedFood && savedFoods.some(
+    (s) => s.food_name.toLowerCase() === selectedFood.name.toLowerCase()
+  );
+
   const showResults = debounced.length > 0;
   const hasAnyResult = globalResults.length + regionalResults.length > 0;
 
