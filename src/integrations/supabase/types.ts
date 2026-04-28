@@ -183,6 +183,7 @@ export type Database = {
           id: string
           meals_per_day: string
           name: string
+          region: string
           start_date: string
           starting_weight: number
           subscription_status: string
@@ -201,6 +202,7 @@ export type Database = {
           id?: string
           meals_per_day?: string
           name?: string
+          region?: string
           start_date?: string
           starting_weight?: number
           subscription_status?: string
@@ -219,6 +221,7 @@ export type Database = {
           id?: string
           meals_per_day?: string
           name?: string
+          region?: string
           start_date?: string
           starting_weight?: number
           subscription_status?: string

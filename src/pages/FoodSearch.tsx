@@ -1,5 +1,5 @@
-import { useState, useMemo, useCallback } from "react";
-import { Search as SearchIcon, Plus, Minus } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { Search as SearchIcon, Plus, Minus, Loader2, Globe2, MapPin } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,6 +18,8 @@ import {
 } from "@/components/ui/select";
 import { useTodayLog, useUpsertLog } from "@/hooks/useDailyLogs";
 import { useAddFoodLog } from "@/hooks/useFoodLogs";
+import { useProfile } from "@/hooks/useProfile";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 
 interface FoodItem {
@@ -28,40 +30,16 @@ interface FoodItem {
   protein: number;
   carbs: number;
   fats: number;
+  origin?: string;
 }
 
 const QUICK_LOG: FoodItem[] = [
   { name: "Roti", emoji: "🫓", portion: "1 medium", calories: 100, protein: 3, carbs: 18, fats: 1 },
-  { name: "White Rice", emoji: "🍚", portion: "1 plate", calories: 130, protein: 3, carbs: 28, fats: 0.3 },
-  { name: "Dal Fry", emoji: "🍲", portion: "1 cup", calories: 150, protein: 9, carbs: 20, fats: 4 },
-  { name: "Chicken Curry", emoji: "🍗", portion: "1 serving", calories: 250, protein: 20, carbs: 8, fats: 15 },
-  { name: "Masala Chai", emoji: "☕", portion: "1 cup", calories: 80, protein: 2, carbs: 12, fats: 3 },
+  { name: "Pasta", emoji: "🍝", portion: "1 plate", calories: 320, protein: 12, carbs: 55, fats: 6 },
+  { name: "Sushi Roll", emoji: "🍣", portion: "8 pieces", calories: 250, protein: 9, carbs: 38, fats: 6 },
+  { name: "Tacos", emoji: "🌮", portion: "2 pieces", calories: 340, protein: 14, carbs: 30, fats: 18 },
   { name: "Boiled Egg", emoji: "🥚", portion: "1 large", calories: 78, protein: 6, carbs: 1, fats: 5 },
-];
-
-const CRAVINGS: FoodItem[] = [
-  { name: "Chicken Shawarma", emoji: "🌯", portion: "1 roll", calories: 350, protein: 22, carbs: 30, fats: 16 },
-  { name: "Vada Pav", emoji: "🍔", portion: "1 piece", calories: 280, protein: 5, carbs: 38, fats: 12 },
-  { name: "Pav Bhaji", emoji: "🍛", portion: "1 plate", calories: 400, protein: 10, carbs: 50, fats: 18 },
-  { name: "Paneer Tikka", emoji: "🧀", portion: "6 pieces", calories: 260, protein: 18, carbs: 6, fats: 18 },
-];
-
-const ALL_FOODS: FoodItem[] = [
-  ...QUICK_LOG,
-  ...CRAVINGS,
-  { name: "Idli", emoji: "🥟", portion: "2 pieces", calories: 130, protein: 4, carbs: 26, fats: 1 },
-  { name: "Dosa", emoji: "🥞", portion: "1 piece", calories: 170, protein: 4, carbs: 28, fats: 5 },
-  { name: "Samosa", emoji: "📐", portion: "1 piece", calories: 260, protein: 4, carbs: 30, fats: 14 },
-  { name: "Curd / Yogurt", emoji: "🥛", portion: "1 cup", calories: 100, protein: 5, carbs: 8, fats: 5 },
-  { name: "Aloo Paratha", emoji: "🫓", portion: "1 piece", calories: 300, protein: 6, carbs: 40, fats: 13 },
-  { name: "Rajma", emoji: "🫘", portion: "1 cup", calories: 210, protein: 14, carbs: 36, fats: 1 },
-  { name: "Poha", emoji: "🍚", portion: "1 plate", calories: 180, protein: 3, carbs: 32, fats: 5 },
-  { name: "Oats", emoji: "🥣", portion: "1 cup cooked", calories: 150, protein: 5, carbs: 27, fats: 3 },
-  { name: "Banana", emoji: "🍌", portion: "1 medium", calories: 105, protein: 1.3, carbs: 27, fats: 0.4 },
-  { name: "Apple", emoji: "🍎", portion: "1 medium", calories: 95, protein: 0.5, carbs: 25, fats: 0.3 },
-  { name: "Paneer", emoji: "🧀", portion: "100g", calories: 265, protein: 18, carbs: 4, fats: 20 },
-  { name: "Chicken Breast", emoji: "🍗", portion: "100g", calories: 165, protein: 31, carbs: 0, fats: 3.6 },
-  { name: "Almonds", emoji: "🥜", portion: "10 pieces", calories: 70, protein: 2.5, carbs: 2.5, fats: 6 },
+  { name: "Greek Salad", emoji: "🥗", portion: "1 bowl", calories: 220, protein: 8, carbs: 12, fats: 16 },
 ];
 
 function getMealTypeFromTime(): string {
@@ -74,22 +52,66 @@ function getMealTypeFromTime(): string {
 
 export default function FoodSearch() {
   const [query, setQuery] = useState("");
+  const [debounced, setDebounced] = useState("");
+  const [globalResults, setGlobalResults] = useState<FoodItem[]>([]);
+  const [regionalResults, setRegionalResults] = useState<FoodItem[]>([]);
+  const [searching, setSearching] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
+
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [selectedFood, setSelectedFood] = useState<FoodItem | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [mealType, setMealType] = useState(getMealTypeFromTime);
 
+  const { data: profile } = useProfile();
+  const region = (profile as any)?.region || "India";
+
   const { data: todayLog } = useTodayLog();
   const upsertLog = useUpsertLog();
   const addFoodLog = useAddFoodLog();
 
-  const searchResults = useMemo(() => {
-    if (!query.trim()) return [];
-    const q = query.toLowerCase();
-    return ALL_FOODS.filter(
-      (f) => f.name.toLowerCase().includes(q) || f.portion.toLowerCase().includes(q)
-    );
+  // Debounce query
+  useEffect(() => {
+    const t = setTimeout(() => setDebounced(query.trim()), 450);
+    return () => clearTimeout(t);
   }, [query]);
+
+  // Search via AI
+  useEffect(() => {
+    if (!debounced) {
+      setGlobalResults([]);
+      setRegionalResults([]);
+      setSearchError(null);
+      return;
+    }
+    let cancelled = false;
+    setSearching(true);
+    setSearchError(null);
+
+    (async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke("search-foods", {
+          body: { query: debounced, region },
+        });
+        if (cancelled) return;
+        if (error) throw error;
+        if (data?.error) setSearchError(data.error);
+        setGlobalResults(Array.isArray(data?.global) ? data.global : []);
+        setRegionalResults(Array.isArray(data?.regional) ? data.regional : []);
+      } catch (e) {
+        if (!cancelled) {
+          console.error(e);
+          setSearchError("Search failed. Please try again.");
+          setGlobalResults([]);
+          setRegionalResults([]);
+        }
+      } finally {
+        if (!cancelled) setSearching(false);
+      }
+    })();
+
+    return () => { cancelled = true; };
+  }, [debounced, region]);
 
   const openDrawer = useCallback((food: FoodItem) => {
     setSelectedFood(food);
@@ -107,7 +129,6 @@ export default function FoodSearch() {
     const addFats = Math.round(selectedFood.fats * quantity);
 
     try {
-      // Save individual food entry
       await addFoodLog.mutateAsync({
         meal_type: mealType,
         food_name: selectedFood.name,
@@ -120,7 +141,6 @@ export default function FoodSearch() {
         quantity,
       });
 
-      // Update daily aggregate
       await upsertLog.mutateAsync({
         total_calories: (todayLog?.total_calories ?? 0) + addCal,
         protein: (todayLog?.protein ?? 0) + addProtein,
@@ -137,65 +157,86 @@ export default function FoodSearch() {
     }
   }, [selectedFood, quantity, mealType, todayLog, upsertLog, addFoodLog]);
 
-  const showResults = query.trim().length > 0;
+  const showResults = debounced.length > 0;
+  const hasAnyResult = globalResults.length + regionalResults.length > 0;
 
   return (
     <div className="min-h-screen bg-background">
       <header className="bg-card/60 backdrop-blur-xl sticky top-0 z-40 border-b border-border">
         <div className="container max-w-lg mx-auto px-4 pt-6 pb-4">
-          <h1 className="text-2xl font-bold font-display text-foreground mb-4">Food Search</h1>
+          <h1 className="text-2xl font-bold font-display text-foreground mb-1">Food Search</h1>
+          <p className="text-xs text-muted-foreground mb-4 flex items-center gap-1.5">
+            <Globe2 className="w-3 h-3" /> Any cuisine, any language · Region: <span className="font-semibold text-foreground">{region}</span>
+          </p>
           <div className="relative">
             <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
             <Input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search meals, ingredients, or scan..."
+              placeholder="Try 'pasta', 'sushi', 'दाल', 'tacos'..."
               className="pl-12 h-12 rounded-full bg-secondary border-border text-base placeholder:text-muted-foreground"
               autoFocus
             />
+            {searching && (
+              <Loader2 className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-primary animate-spin" />
+            )}
           </div>
         </div>
       </header>
 
       <main className="container max-w-lg mx-auto px-4 py-5 space-y-7">
         {showResults ? (
-          <section className="space-y-2 animate-fade-in">
-            <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-3">Results</h3>
-            {searchResults.length === 0 ? (
-              <p className="text-muted-foreground text-sm text-center py-10">No results for "{query}"</p>
-            ) : (
-              searchResults.map((food) => (
-                <FoodRow key={food.name} food={food} onAdd={() => openDrawer(food)} />
-              ))
+          <div className="space-y-7 animate-fade-in">
+            {searchError && (
+              <p className="text-sm text-destructive text-center py-2">{searchError}</p>
             )}
-          </section>
+
+            {!searching && !hasAnyResult && !searchError && (
+              <p className="text-muted-foreground text-sm text-center py-10">No foods found for "{debounced}"</p>
+            )}
+
+            {regionalResults.length > 0 && (
+              <section>
+                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-3 flex items-center gap-1.5">
+                  <MapPin className="w-3 h-3" /> Regional Favorites · {region}
+                </h3>
+                <div className="space-y-2">
+                  {regionalResults.map((food, i) => (
+                    <FoodRow key={`r-${i}-${food.name}`} food={food} onAdd={() => openDrawer(food)} />
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {globalResults.length > 0 && (
+              <section>
+                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-3 flex items-center gap-1.5">
+                  <Globe2 className="w-3 h-3" /> Popular Globally
+                </h3>
+                <div className="space-y-2">
+                  {globalResults.map((food, i) => (
+                    <FoodRow key={`g-${i}-${food.name}`} food={food} onAdd={() => openDrawer(food)} />
+                  ))}
+                </div>
+              </section>
+            )}
+          </div>
         ) : (
-          <>
-            <section>
-              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-3">Quick Log</h3>
-              <div className="flex gap-2.5 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-hide">
-                {QUICK_LOG.map((food) => (
-                  <button key={food.name} onClick={() => openDrawer(food)} className="flex-shrink-0 flex items-center gap-2 px-4 py-2.5 rounded-full border border-border bg-card hover:border-primary/50 hover:bg-primary/5 transition-all active:scale-95 shadow-sm">
-                    <span className="text-base">{food.emoji}</span>
-                    <span className="text-sm font-medium text-foreground whitespace-nowrap">{food.name}</span>
-                    <span className="text-xs text-primary font-bold whitespace-nowrap">{food.calories}</span>
-                  </button>
-                ))}
-              </div>
-            </section>
-            <section>
-              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-3">Common Indian Cravings</h3>
-              <div className="grid grid-cols-2 gap-3">
-                {CRAVINGS.map((food) => (
-                  <button key={food.name} onClick={() => openDrawer(food)} className="flex flex-col items-start gap-1.5 p-4 rounded-2xl border border-border bg-card hover:border-primary/40 hover:shadow-md hover:shadow-primary/5 transition-all active:scale-[0.97]">
-                    <span className="text-2xl">{food.emoji}</span>
-                    <span className="text-sm font-semibold text-foreground leading-tight">{food.name}</span>
-                    <span className="text-xs text-primary font-bold">{food.calories} kcal</span>
-                  </button>
-                ))}
-              </div>
-            </section>
-          </>
+          <section>
+            <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-3">Quick Log</h3>
+            <div className="grid grid-cols-2 gap-3">
+              {QUICK_LOG.map((food) => (
+                <button key={food.name} onClick={() => openDrawer(food)} className="flex flex-col items-start gap-1.5 p-4 rounded-2xl border border-border bg-card hover:border-primary/40 hover:shadow-md hover:shadow-primary/5 transition-all active:scale-[0.97]">
+                  <span className="text-2xl">{food.emoji}</span>
+                  <span className="text-sm font-semibold text-foreground leading-tight">{food.name}</span>
+                  <span className="text-xs text-primary font-bold">{food.calories} kcal</span>
+                </button>
+              ))}
+            </div>
+            <p className="text-xs text-muted-foreground text-center mt-6">
+              💡 Search for any dish in any language — Italian Pasta, 寿司, Tacos, دجاج…
+            </p>
+          </section>
         )}
       </main>
 
@@ -208,11 +249,13 @@ export default function FoodSearch() {
                   <span className="text-2xl">{selectedFood.emoji}</span>
                   {selectedFood.name}
                 </DrawerTitle>
-                <p className="text-sm text-muted-foreground">{selectedFood.portion}</p>
+                <p className="text-sm text-muted-foreground">
+                  {selectedFood.portion}
+                  {selectedFood.origin ? ` · ${selectedFood.origin}` : ""}
+                </p>
               </DrawerHeader>
 
               <div className="px-4 space-y-5">
-                {/* Meal type selector */}
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium text-foreground">Meal</span>
                   <Select value={mealType} onValueChange={setMealType}>
@@ -228,7 +271,6 @@ export default function FoodSearch() {
                   </Select>
                 </div>
 
-                {/* Quantity selector */}
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium text-foreground">Quantity</span>
                   <div className="flex items-center gap-3">
@@ -242,7 +284,6 @@ export default function FoodSearch() {
                   </div>
                 </div>
 
-                {/* Nutrition preview */}
                 <div className="grid grid-cols-4 gap-3">
                   {[
                     { label: "Calories", value: Math.round(selectedFood.calories * quantity), unit: "kcal", color: "text-primary" },
@@ -282,14 +323,16 @@ export default function FoodSearch() {
 function FoodRow({ food, onAdd }: { food: FoodItem; onAdd: () => void }) {
   return (
     <button onClick={onAdd} className="w-full flex items-center justify-between rounded-xl border border-border bg-card p-4 hover:border-primary/30 transition-all active:scale-[0.98]">
-      <div className="flex items-center gap-3 text-left">
+      <div className="flex items-center gap-3 text-left min-w-0">
         <span className="text-xl">{food.emoji}</span>
-        <div>
-          <p className="text-sm font-semibold text-foreground">{food.name}</p>
-          <p className="text-xs text-muted-foreground">{food.portion}</p>
+        <div className="min-w-0">
+          <p className="text-sm font-semibold text-foreground truncate">{food.name}</p>
+          <p className="text-xs text-muted-foreground truncate">
+            {food.portion}{food.origin ? ` · ${food.origin}` : ""}
+          </p>
         </div>
       </div>
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 shrink-0">
         <div className="text-right">
           <p className="text-sm font-bold text-primary">{food.calories} kcal</p>
           <p className="text-[10px] text-muted-foreground">{food.protein}g protein</p>
