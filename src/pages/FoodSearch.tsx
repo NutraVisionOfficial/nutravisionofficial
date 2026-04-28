@@ -3,6 +3,8 @@ import { Search as SearchIcon, Plus, Minus, Loader2, Globe2, MapPin, Bookmark, B
 import { useSavedFoods, useSaveFood, useDeleteSavedFood } from "@/hooks/useSavedFoods";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Slider } from "@/components/ui/slider";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Drawer,
   DrawerContent,
@@ -62,7 +64,12 @@ export default function FoodSearch() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [selectedFood, setSelectedFood] = useState<FoodItem | null>(null);
   const [quantity, setQuantity] = useState(1);
+  const [grams, setGrams] = useState(100);
+  const [scaleMode, setScaleMode] = useState<"servings" | "grams">("servings");
   const [mealType, setMealType] = useState(getMealTypeFromTime);
+
+  // Effective scaling factor: 1 serving = 100g baseline
+  const factor = scaleMode === "grams" ? grams / 100 : quantity;
 
   const { data: profile } = useProfile();
   const region = (profile as any)?.region || "India";
@@ -120,6 +127,8 @@ export default function FoodSearch() {
   const openDrawer = useCallback((food: FoodItem) => {
     setSelectedFood(food);
     setQuantity(1);
+    setGrams(100);
+    setScaleMode("servings");
     setMealType(getMealTypeFromTime());
     setDrawerOpen(true);
   }, []);
@@ -127,22 +136,23 @@ export default function FoodSearch() {
   const handleAddToDiary = useCallback(async () => {
     if (!selectedFood) return;
 
-    const addCal = Math.round(selectedFood.calories * quantity);
-    const addProtein = Math.round(selectedFood.protein * quantity);
-    const addCarbs = Math.round(selectedFood.carbs * quantity);
-    const addFats = Math.round(selectedFood.fats * quantity);
+    const addCal = Math.round(selectedFood.calories * factor);
+    const addProtein = Math.round(selectedFood.protein * factor);
+    const addCarbs = Math.round(selectedFood.carbs * factor);
+    const addFats = Math.round(selectedFood.fats * factor);
+    const portionLabel = scaleMode === "grams" ? `${grams}g` : `${quantity} × ${selectedFood.portion}`;
 
     try {
       await addFoodLog.mutateAsync({
         meal_type: mealType,
         food_name: selectedFood.name,
         emoji: selectedFood.emoji,
-        portion: selectedFood.portion,
+        portion: portionLabel,
         calories: addCal,
         protein: addProtein,
         carbs: addCarbs,
         fats: addFats,
-        quantity,
+        quantity: factor,
       });
 
       await upsertLog.mutateAsync({
@@ -154,30 +164,31 @@ export default function FoodSearch() {
         workout_duration_mins: todayLog?.workout_duration_mins ?? 0,
       });
 
-      toast({ title: `Added ${quantity}× ${selectedFood.emoji} ${selectedFood.name}`, description: `+${addCal} kcal logged to ${mealType}` });
+      toast({ title: `Added ${selectedFood.emoji} ${selectedFood.name}`, description: `${portionLabel} · +${addCal} kcal to ${mealType}` });
       setDrawerOpen(false);
     } catch {
       toast({ title: "Error", description: "Failed to log food", variant: "destructive" });
     }
-  }, [selectedFood, quantity, mealType, todayLog, upsertLog, addFoodLog]);
+  }, [selectedFood, factor, scaleMode, grams, quantity, mealType, todayLog, upsertLog, addFoodLog]);
 
   const handleSaveFood = useCallback(async () => {
     if (!selectedFood) return;
+    const portionLabel = scaleMode === "grams" ? `${grams}g` : `${quantity} × ${selectedFood.portion}`;
     try {
       await saveFood.mutateAsync({
         food_name: selectedFood.name,
         emoji: selectedFood.emoji,
-        portion: selectedFood.portion,
-        calories: Math.round(selectedFood.calories * quantity),
-        protein: Math.round(selectedFood.protein * quantity),
-        carbs: Math.round(selectedFood.carbs * quantity),
-        fats: Math.round(selectedFood.fats * quantity),
+        portion: portionLabel,
+        calories: Math.round(selectedFood.calories * factor),
+        protein: Math.round(selectedFood.protein * factor),
+        carbs: Math.round(selectedFood.carbs * factor),
+        fats: Math.round(selectedFood.fats * factor),
       });
       toast({ title: `Saved ${selectedFood.emoji} ${selectedFood.name}`, description: "Available in My Saved Foods" });
     } catch {
       toast({ title: "Error", description: "Failed to save food", variant: "destructive" });
     }
-  }, [selectedFood, quantity, saveFood]);
+  }, [selectedFood, factor, scaleMode, grams, quantity, saveFood]);
 
   const isAlreadySaved = !!selectedFood && savedFoods.some(
     (s) => s.food_name.toLowerCase() === selectedFood.name.toLowerCase()
@@ -334,28 +345,77 @@ export default function FoodSearch() {
                   </Select>
                 </div>
 
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-foreground">Quantity</span>
-                  <div className="flex items-center gap-3">
-                    <Button variant="outline" size="icon" className="h-9 w-9 rounded-full" onClick={() => setQuantity(Math.max(0.5, quantity - 0.5))}>
-                      <Minus className="w-4 h-4" />
-                    </Button>
-                    <span className="text-xl font-bold font-display text-foreground w-10 text-center">{quantity}</span>
-                    <Button variant="outline" size="icon" className="h-9 w-9 rounded-full" onClick={() => setQuantity(quantity + 0.5)}>
-                      <Plus className="w-4 h-4" />
-                    </Button>
+                <Tabs value={scaleMode} onValueChange={(v) => setScaleMode(v as "servings" | "grams")}>
+                  <TabsList className="grid grid-cols-2 w-full">
+                    <TabsTrigger value="servings">Servings</TabsTrigger>
+                    <TabsTrigger value="grams">Grams</TabsTrigger>
+                  </TabsList>
+                </Tabs>
+
+                {scaleMode === "servings" ? (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium text-foreground">Quantity</span>
+                      <div className="flex items-center gap-3">
+                        <Button variant="outline" size="icon" className="h-9 w-9 rounded-full" onClick={() => setQuantity(Math.max(0.25, +(quantity - 0.25).toFixed(2)))}>
+                          <Minus className="w-4 h-4" />
+                        </Button>
+                        <span className="text-xl font-bold font-display text-foreground w-14 text-center">{quantity}×</span>
+                        <Button variant="outline" size="icon" className="h-9 w-9 rounded-full" onClick={() => setQuantity(+(quantity + 0.25).toFixed(2))}>
+                          <Plus className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                    <Slider
+                      value={[quantity]}
+                      min={0.25}
+                      max={5}
+                      step={0.25}
+                      onValueChange={(v) => setQuantity(v[0])}
+                    />
+                    <p className="text-xs text-muted-foreground text-center">
+                      {quantity} × {selectedFood.portion}
+                    </p>
                   </div>
-                </div>
+                ) : (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium text-foreground">Grams</span>
+                      <div className="flex items-center gap-2">
+                        <Input
+                          type="number"
+                          inputMode="numeric"
+                          min={1}
+                          max={2000}
+                          value={grams}
+                          onChange={(e) => setGrams(Math.max(1, Math.min(2000, Number(e.target.value) || 0)))}
+                          className="w-20 h-9 text-center font-bold"
+                        />
+                        <span className="text-sm text-muted-foreground">g</span>
+                      </div>
+                    </div>
+                    <Slider
+                      value={[grams]}
+                      min={10}
+                      max={500}
+                      step={5}
+                      onValueChange={(v) => setGrams(v[0])}
+                    />
+                    <p className="text-xs text-muted-foreground text-center">
+                      Per 100g of {selectedFood.name}
+                    </p>
+                  </div>
+                )}
 
                 <div className="grid grid-cols-4 gap-3">
                   {[
-                    { label: "Calories", value: Math.round(selectedFood.calories * quantity), unit: "kcal", color: "text-primary" },
-                    { label: "Protein", value: Math.round(selectedFood.protein * quantity), unit: "g", color: "text-destructive" },
-                    { label: "Carbs", value: Math.round(selectedFood.carbs * quantity), unit: "g", color: "text-chart-4" },
-                    { label: "Fats", value: Math.round(selectedFood.fats * quantity), unit: "g", color: "text-accent" },
+                    { label: "Calories", value: Math.round(selectedFood.calories * factor), unit: "kcal", color: "text-primary" },
+                    { label: "Protein", value: Math.round(selectedFood.protein * factor), unit: "g", color: "text-destructive" },
+                    { label: "Carbs", value: Math.round(selectedFood.carbs * factor), unit: "g", color: "text-chart-4" },
+                    { label: "Fats", value: Math.round(selectedFood.fats * factor), unit: "g", color: "text-accent" },
                   ].map((m) => (
-                    <div key={m.label} className="rounded-xl bg-secondary p-3 text-center">
-                      <p className={`text-lg font-bold font-display ${m.color}`}>
+                    <div key={m.label} className="rounded-xl bg-secondary p-3 text-center transition-all">
+                      <p className={`text-lg font-bold font-display ${m.color} tabular-nums`}>
                         {m.value}
                         <span className="text-[10px] font-normal text-muted-foreground ml-0.5">{m.unit}</span>
                       </p>
