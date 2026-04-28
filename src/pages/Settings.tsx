@@ -26,6 +26,7 @@ export default function Settings() {
   const [goalWeight, setGoalWeight] = useState("");
   const [timeframe, setTimeframe] = useState("12");
   const [dietType, setDietType] = useState("standard");
+  const [region, setRegion] = useState("India");
   const [budgetMode, setBudgetMode] = useState(false);
   const [calorieTarget, setCalorieTarget] = useState<number | null>(null);
 
@@ -36,6 +37,7 @@ export default function Settings() {
       setGoalWeight(String(profile.goal_weight));
       setTimeframe(String(profile.goal_timeframe_months));
       setDietType(profile.diet_type || "standard");
+      setRegion((profile as any).region || "India");
       setCalorieTarget(profile.daily_calorie_target);
     }
   }, [profile]);
@@ -72,6 +74,7 @@ export default function Settings() {
         goal_timeframe_months: Number(timeframe),
         daily_calorie_target: target,
         diet_type: dietType,
+        region,
       });
       toast({ title: "Target calculated! 🎯", description: `Your daily target is ${target} kcal. Dashboard updated.` });
     } catch {
@@ -197,6 +200,32 @@ export default function Settings() {
                 <SelectItem value="eggetarian">Eggetarian</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+
+          <div>
+            <Label>Region (for Regional Favorites)</Label>
+            <Select value={region} onValueChange={setRegion}>
+              <SelectTrigger className="mt-1">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="India">🇮🇳 India</SelectItem>
+                <SelectItem value="USA">🇺🇸 USA</SelectItem>
+                <SelectItem value="Italy">🇮🇹 Italy</SelectItem>
+                <SelectItem value="Japan">🇯🇵 Japan</SelectItem>
+                <SelectItem value="Mexico">🇲🇽 Mexico</SelectItem>
+                <SelectItem value="China">🇨🇳 China</SelectItem>
+                <SelectItem value="UK">🇬🇧 UK</SelectItem>
+                <SelectItem value="France">🇫🇷 France</SelectItem>
+                <SelectItem value="Spain">🇪🇸 Spain</SelectItem>
+                <SelectItem value="Brazil">🇧🇷 Brazil</SelectItem>
+                <SelectItem value="Middle East">🌍 Middle East</SelectItem>
+                <SelectItem value="Southeast Asia">🌏 Southeast Asia</SelectItem>
+                <SelectItem value="Mediterranean">🫒 Mediterranean</SelectItem>
+                <SelectItem value="Global">🌐 Global</SelectItem>
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground mt-1">Tailors search to dishes you love.</p>
           </div>
 
           <div className="flex items-center justify-between">
