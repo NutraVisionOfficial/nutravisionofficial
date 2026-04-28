@@ -127,6 +127,8 @@ export default function FoodSearch() {
   const openDrawer = useCallback((food: FoodItem) => {
     setSelectedFood(food);
     setQuantity(1);
+    setGrams(100);
+    setScaleMode("servings");
     setMealType(getMealTypeFromTime());
     setDrawerOpen(true);
   }, []);
@@ -134,22 +136,23 @@ export default function FoodSearch() {
   const handleAddToDiary = useCallback(async () => {
     if (!selectedFood) return;
 
-    const addCal = Math.round(selectedFood.calories * quantity);
-    const addProtein = Math.round(selectedFood.protein * quantity);
-    const addCarbs = Math.round(selectedFood.carbs * quantity);
-    const addFats = Math.round(selectedFood.fats * quantity);
+    const addCal = Math.round(selectedFood.calories * factor);
+    const addProtein = Math.round(selectedFood.protein * factor);
+    const addCarbs = Math.round(selectedFood.carbs * factor);
+    const addFats = Math.round(selectedFood.fats * factor);
+    const portionLabel = scaleMode === "grams" ? `${grams}g` : `${quantity} × ${selectedFood.portion}`;
 
     try {
       await addFoodLog.mutateAsync({
         meal_type: mealType,
         food_name: selectedFood.name,
         emoji: selectedFood.emoji,
-        portion: selectedFood.portion,
+        portion: portionLabel,
         calories: addCal,
         protein: addProtein,
         carbs: addCarbs,
         fats: addFats,
-        quantity,
+        quantity: factor,
       });
 
       await upsertLog.mutateAsync({
@@ -161,30 +164,31 @@ export default function FoodSearch() {
         workout_duration_mins: todayLog?.workout_duration_mins ?? 0,
       });
 
-      toast({ title: `Added ${quantity}× ${selectedFood.emoji} ${selectedFood.name}`, description: `+${addCal} kcal logged to ${mealType}` });
+      toast({ title: `Added ${selectedFood.emoji} ${selectedFood.name}`, description: `${portionLabel} · +${addCal} kcal to ${mealType}` });
       setDrawerOpen(false);
     } catch {
       toast({ title: "Error", description: "Failed to log food", variant: "destructive" });
     }
-  }, [selectedFood, quantity, mealType, todayLog, upsertLog, addFoodLog]);
+  }, [selectedFood, factor, scaleMode, grams, quantity, mealType, todayLog, upsertLog, addFoodLog]);
 
   const handleSaveFood = useCallback(async () => {
     if (!selectedFood) return;
+    const portionLabel = scaleMode === "grams" ? `${grams}g` : `${quantity} × ${selectedFood.portion}`;
     try {
       await saveFood.mutateAsync({
         food_name: selectedFood.name,
         emoji: selectedFood.emoji,
-        portion: selectedFood.portion,
-        calories: Math.round(selectedFood.calories * quantity),
-        protein: Math.round(selectedFood.protein * quantity),
-        carbs: Math.round(selectedFood.carbs * quantity),
-        fats: Math.round(selectedFood.fats * quantity),
+        portion: portionLabel,
+        calories: Math.round(selectedFood.calories * factor),
+        protein: Math.round(selectedFood.protein * factor),
+        carbs: Math.round(selectedFood.carbs * factor),
+        fats: Math.round(selectedFood.fats * factor),
       });
       toast({ title: `Saved ${selectedFood.emoji} ${selectedFood.name}`, description: "Available in My Saved Foods" });
     } catch {
       toast({ title: "Error", description: "Failed to save food", variant: "destructive" });
     }
-  }, [selectedFood, quantity, saveFood]);
+  }, [selectedFood, factor, scaleMode, grams, quantity, saveFood]);
 
   const isAlreadySaved = !!selectedFood && savedFoods.some(
     (s) => s.food_name.toLowerCase() === selectedFood.name.toLowerCase()
