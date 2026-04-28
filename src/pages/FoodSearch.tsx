@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
-import { Search as SearchIcon, Plus, Minus, Loader2, Globe2, MapPin } from "lucide-react";
+import { Search as SearchIcon, Plus, Minus, Loader2, Globe2, MapPin, Bookmark, BookmarkCheck, Trash2 } from "lucide-react";
+import { useSavedFoods, useSaveFood, useDeleteSavedFood } from "@/hooks/useSavedFoods";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -69,6 +70,9 @@ export default function FoodSearch() {
   const { data: todayLog } = useTodayLog();
   const upsertLog = useUpsertLog();
   const addFoodLog = useAddFoodLog();
+  const { data: savedFoods = [] } = useSavedFoods();
+  const saveFood = useSaveFood();
+  const deleteSavedFood = useDeleteSavedFood();
 
   // Debounce query
   useEffect(() => {
@@ -157,6 +161,28 @@ export default function FoodSearch() {
     }
   }, [selectedFood, quantity, mealType, todayLog, upsertLog, addFoodLog]);
 
+  const handleSaveFood = useCallback(async () => {
+    if (!selectedFood) return;
+    try {
+      await saveFood.mutateAsync({
+        food_name: selectedFood.name,
+        emoji: selectedFood.emoji,
+        portion: selectedFood.portion,
+        calories: Math.round(selectedFood.calories * quantity),
+        protein: Math.round(selectedFood.protein * quantity),
+        carbs: Math.round(selectedFood.carbs * quantity),
+        fats: Math.round(selectedFood.fats * quantity),
+      });
+      toast({ title: `Saved ${selectedFood.emoji} ${selectedFood.name}`, description: "Available in My Saved Foods" });
+    } catch {
+      toast({ title: "Error", description: "Failed to save food", variant: "destructive" });
+    }
+  }, [selectedFood, quantity, saveFood]);
+
+  const isAlreadySaved = !!selectedFood && savedFoods.some(
+    (s) => s.food_name.toLowerCase() === selectedFood.name.toLowerCase()
+  );
+
   const showResults = debounced.length > 0;
   const hasAnyResult = globalResults.length + regionalResults.length > 0;
 
@@ -222,21 +248,58 @@ export default function FoodSearch() {
             )}
           </div>
         ) : (
-          <section>
-            <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-3">Quick Log</h3>
-            <div className="grid grid-cols-2 gap-3">
-              {QUICK_LOG.map((food) => (
-                <button key={food.name} onClick={() => openDrawer(food)} className="flex flex-col items-start gap-1.5 p-4 rounded-2xl border border-border bg-card hover:border-primary/40 hover:shadow-md hover:shadow-primary/5 transition-all active:scale-[0.97]">
-                  <span className="text-2xl">{food.emoji}</span>
-                  <span className="text-sm font-semibold text-foreground leading-tight">{food.name}</span>
-                  <span className="text-xs text-primary font-bold">{food.calories} kcal</span>
-                </button>
-              ))}
-            </div>
-            <p className="text-xs text-muted-foreground text-center mt-6">
-              💡 Search for any dish in any language — Italian Pasta, 寿司, Tacos, دجاج…
-            </p>
-          </section>
+          <>
+            {savedFoods.length > 0 && (
+              <section>
+                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-3 flex items-center gap-1.5">
+                  <BookmarkCheck className="w-3 h-3" /> My Saved Foods
+                </h3>
+                <div className="space-y-2">
+                  {savedFoods.map((sf) => (
+                    <div key={sf.id} className="w-full flex items-center justify-between rounded-xl border border-primary/20 bg-card p-4 hover:border-primary/40 transition-all">
+                      <button
+                        onClick={() => openDrawer({
+                          name: sf.food_name, emoji: sf.emoji, portion: sf.portion,
+                          calories: sf.calories, protein: Number(sf.protein), carbs: Number(sf.carbs), fats: Number(sf.fats),
+                        })}
+                        className="flex items-center gap-3 text-left min-w-0 flex-1 active:scale-[0.98]"
+                      >
+                        <span className="text-xl">{sf.emoji}</span>
+                        <div className="min-w-0">
+                          <p className="text-sm font-semibold text-foreground truncate">{sf.food_name}</p>
+                          <p className="text-xs text-muted-foreground truncate">{sf.portion} · {sf.calories} kcal</p>
+                        </div>
+                      </button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-muted-foreground hover:text-destructive shrink-0"
+                        onClick={() => deleteSavedFood.mutate(sf.id)}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            <section>
+              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-3">Quick Log</h3>
+              <div className="grid grid-cols-2 gap-3">
+                {QUICK_LOG.map((food) => (
+                  <button key={food.name} onClick={() => openDrawer(food)} className="flex flex-col items-start gap-1.5 p-4 rounded-2xl border border-border bg-card hover:border-primary/40 hover:shadow-md hover:shadow-primary/5 transition-all active:scale-[0.97]">
+                    <span className="text-2xl">{food.emoji}</span>
+                    <span className="text-sm font-semibold text-foreground leading-tight">{food.name}</span>
+                    <span className="text-xs text-primary font-bold">{food.calories} kcal</span>
+                  </button>
+                ))}
+              </div>
+              <p className="text-xs text-muted-foreground text-center mt-6">
+                💡 Tip: Open any food and tap the bookmark to save it with your preferred portion.
+              </p>
+            </section>
+          </>
         )}
       </main>
 
@@ -302,7 +365,7 @@ export default function FoodSearch() {
                 </div>
               </div>
 
-              <DrawerFooter>
+              <DrawerFooter className="gap-2">
                 <Button
                   size="lg"
                   className="w-full h-14 rounded-xl text-base font-bold shadow-lg shadow-primary/25"
@@ -310,6 +373,19 @@ export default function FoodSearch() {
                   disabled={upsertLog.isPending || addFoodLog.isPending}
                 >
                   {upsertLog.isPending || addFoodLog.isPending ? "Adding..." : "Add to Diary"}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="w-full h-12 rounded-xl text-sm font-semibold gap-2"
+                  onClick={handleSaveFood}
+                  disabled={saveFood.isPending || isAlreadySaved}
+                >
+                  {isAlreadySaved ? (
+                    <><BookmarkCheck className="w-4 h-4" /> Already Saved</>
+                  ) : (
+                    <><Bookmark className="w-4 h-4" /> {saveFood.isPending ? "Saving..." : "Save for Quick Re-log"}</>
+                  )}
                 </Button>
               </DrawerFooter>
             </>

@@ -254,6 +254,48 @@ export type Database = {
         }
         Relationships: []
       }
+      saved_foods: {
+        Row: {
+          calories: number
+          carbs: number
+          created_at: string
+          emoji: string
+          fats: number
+          food_name: string
+          id: string
+          portion: string
+          protein: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          calories?: number
+          carbs?: number
+          created_at?: string
+          emoji?: string
+          fats?: number
+          food_name: string
+          id?: string
+          portion?: string
+          protein?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          calories?: number
+          carbs?: number
+          created_at?: string
+          emoji?: string
+          fats?: number
+          food_name?: string
+          id?: string
+          portion?: string
+          protein?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       step_logs: {
         Row: {
           created_at: string
