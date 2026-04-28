@@ -3,6 +3,8 @@ import { Search as SearchIcon, Plus, Minus, Loader2, Globe2, MapPin, Bookmark, B
 import { useSavedFoods, useSaveFood, useDeleteSavedFood } from "@/hooks/useSavedFoods";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Slider } from "@/components/ui/slider";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Drawer,
   DrawerContent,
