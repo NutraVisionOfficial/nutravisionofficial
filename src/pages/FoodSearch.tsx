@@ -64,7 +64,12 @@ export default function FoodSearch() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [selectedFood, setSelectedFood] = useState<FoodItem | null>(null);
   const [quantity, setQuantity] = useState(1);
+  const [grams, setGrams] = useState(100);
+  const [scaleMode, setScaleMode] = useState<"servings" | "grams">("servings");
   const [mealType, setMealType] = useState(getMealTypeFromTime);
+
+  // Effective scaling factor: 1 serving = 100g baseline
+  const factor = scaleMode === "grams" ? grams / 100 : quantity;
 
   const { data: profile } = useProfile();
   const region = (profile as any)?.region || "India";
