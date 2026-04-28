@@ -365,7 +365,7 @@ export default function FoodSearch() {
                 </div>
               </div>
 
-              <DrawerFooter>
+              <DrawerFooter className="gap-2">
                 <Button
                   size="lg"
                   className="w-full h-14 rounded-xl text-base font-bold shadow-lg shadow-primary/25"
@@ -373,6 +373,19 @@ export default function FoodSearch() {
                   disabled={upsertLog.isPending || addFoodLog.isPending}
                 >
                   {upsertLog.isPending || addFoodLog.isPending ? "Adding..." : "Add to Diary"}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="w-full h-12 rounded-xl text-sm font-semibold gap-2"
+                  onClick={handleSaveFood}
+                  disabled={saveFood.isPending || isAlreadySaved}
+                >
+                  {isAlreadySaved ? (
+                    <><BookmarkCheck className="w-4 h-4" /> Already Saved</>
+                  ) : (
+                    <><Bookmark className="w-4 h-4" /> {saveFood.isPending ? "Saving..." : "Save for Quick Re-log"}</>
+                  )}
                 </Button>
               </DrawerFooter>
             </>
