@@ -70,6 +70,9 @@ export default function FoodSearch() {
   const { data: todayLog } = useTodayLog();
   const upsertLog = useUpsertLog();
   const addFoodLog = useAddFoodLog();
+  const { data: savedFoods = [] } = useSavedFoods();
+  const saveFood = useSaveFood();
+  const deleteSavedFood = useDeleteSavedFood();
 
   // Debounce query
   useEffect(() => {
