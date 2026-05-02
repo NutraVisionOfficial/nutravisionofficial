@@ -1,7 +1,8 @@
 import { useMemo } from "react";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Cell, ReferenceLine } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell, ReferenceLine } from "recharts";
 import { Droplets } from "lucide-react";
 import { useWeeklyWater } from "@/hooks/useWaterIntake";
+import { CartesianGrid } from "@/components/charts/RefSafeCartesianGrid";
 
 const GOAL = 8;
 
