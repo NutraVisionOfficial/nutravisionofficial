@@ -97,16 +97,18 @@ export function WeeklyHabitTracker({ logs }: WeeklyHabitTrackerProps) {
   );
 }
 
-function Dot({ active, color }: { active: boolean; color: string }) {
-  return (
+const Dot = React.forwardRef<HTMLSpanElement, { active: boolean; color: string }>(
+  ({ active, color }, ref) => (
     <span
+      ref={ref}
       className={cn(
         "w-2.5 h-2.5 rounded-full transition-colors",
         active ? color : "bg-muted-foreground/25 border border-muted-foreground/30"
       )}
     />
-  );
-}
+  )
+);
+Dot.displayName = "Dot";
 
 function Legend({ color, label }: { color: string; label: string }) {
   return (
