@@ -11,9 +11,9 @@ import {
   Area,
   XAxis,
   YAxis,
-  CartesianGrid,
   Tooltip,
 } from "recharts";
+import { CartesianGrid } from "@/components/charts/RefSafeCartesianGrid";
 
 export default function Progress() {
   const { data: logs } = useDailyLogs(30);
