@@ -1,5 +1,5 @@
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
-import { CartesianGrid } from "@/components/charts/RefSafeCartesianGrid";
+import { CartesianGrid } from "recharts";
 
 interface WeeklyChartProps {
   logs: Array<{ date: string; total_calories: number; current_weight: number | null }>;
