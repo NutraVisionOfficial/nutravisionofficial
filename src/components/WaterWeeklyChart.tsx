@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell, ReferenceLine } from "recharts";
 import { Droplets } from "lucide-react";
 import { useWeeklyWater } from "@/hooks/useWaterIntake";
-import { CartesianGrid } from "@/components/charts/RefSafeCartesianGrid";
+import { CartesianGrid } from "recharts";
 
 const GOAL = 8;
 

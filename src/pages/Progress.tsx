@@ -13,7 +13,7 @@ import {
   YAxis,
   Tooltip,
 } from "recharts";
-import { CartesianGrid } from "@/components/charts/RefSafeCartesianGrid";
+import { CartesianGrid } from "recharts";
 
 export default function Progress() {
   const { data: logs } = useDailyLogs(30);

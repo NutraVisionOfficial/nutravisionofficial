@@ -1,5 +1,5 @@
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
-import { CartesianGrid } from "@/components/charts/RefSafeCartesianGrid";
+import { CartesianGrid } from "recharts";
 
 interface MacroChartProps {
   logs: Array<{ date: string; protein: number; carbs: number; fats: number }>;
