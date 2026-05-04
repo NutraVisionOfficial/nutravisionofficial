@@ -8,6 +8,22 @@ import { WeeklyChart } from "@/components/WeeklyChart";
 import { WaterWeeklyChart } from "@/components/WaterWeeklyChart";
 import { WeeklyHabitTracker } from "@/components/WeeklyHabitTracker";
 
+// Replace ResponsiveContainer with a fixed-size wrapper so Recharts gets real
+// dimensions in jsdom (jsdom does not lay anything out).
+vi.mock("recharts", async () => {
+  const actual = await vi.importActual<typeof import("recharts")>("recharts");
+  const FixedContainer = ({ children }: { children: React.ReactNode }) =>
+    React.createElement(
+      "div",
+      { style: { width: 600, height: 300 } },
+      React.cloneElement(children as React.ReactElement, {
+        width: 600,
+        height: 300,
+      })
+    );
+  return { ...actual, ResponsiveContainer: FixedContainer };
+});
+
 // Mock the data hook used by WaterWeeklyChart so the test stays hermetic.
 vi.mock("@/hooks/useWaterIntake", () => ({
   useWeeklyWater: () => ({
