@@ -188,7 +188,7 @@ export default function Progress() {
         <div className="rounded-xl border border-border bg-card p-5 animate-fade-in">
           <h3 className="text-base font-semibold font-display text-card-foreground mb-4">Body Fat Trend</h3>
           {bodyFatData.length > 1 ? (
-            <ResponsiveContainer width="100%" height={220}>
+            <ResponsiveContainer width="100%" height={220} minWidth={0} minHeight={0}>
               <AreaChart data={bodyFatData} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
                 <defs>
                   <linearGradient id="bfGradient" x1="0" y1="0" x2="0" y2="1">
