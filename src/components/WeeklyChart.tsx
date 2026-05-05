@@ -13,11 +13,11 @@ export function WeeklyChart({ logs }: WeeklyChartProps) {
   }));
 
   return (
-    <div className="rounded-xl border border-border bg-card p-6 animate-fade-in">
+    <div className="rounded-xl border border-border bg-card p-6 animate-fade-in min-w-0">
       <h3 className="text-lg font-semibold font-display text-card-foreground mb-1">30-Day Trends</h3>
       <p className="text-sm text-muted-foreground mb-5">Calorie intake & weight over time</p>
-      <div className="h-64">
-        <ResponsiveContainer width="100%" height="100%">
+      <div className="h-64 min-w-0">
+        <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
           <AreaChart data={data}>
             <defs>
               <linearGradient id="calGrad" x1="0" y1="0" x2="0" y2="1">
