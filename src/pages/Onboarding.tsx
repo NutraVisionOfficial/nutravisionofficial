@@ -9,6 +9,8 @@ import { lovable } from "@/integrations/lovable/index";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
+import PasswordStrengthIndicator from "@/components/PasswordStrengthIndicator";
+import { validatePassword } from "@/lib/passwordValidation";
 
 const TOTAL_STEPS = 4;
 
@@ -69,6 +71,16 @@ export default function Onboarding() {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
       } else {
+        const pwCheck = validatePassword(password);
+        if (!pwCheck.isValid) {
+          toast({
+            title: "Weak password",
+            description: "Please meet all password requirements before continuing.",
+            variant: "destructive",
+          });
+          setAuthLoading(false);
+          return;
+        }
         const { error } = await supabase.auth.signUp({
           email,
           password,
@@ -164,7 +176,8 @@ export default function Onboarding() {
               </div>
               <div>
                 <Label htmlFor="password">Password</Label>
-                <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required minLength={6} className="mt-1" />
+                <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required minLength={8} className="mt-1" />
+                {!isLogin && <PasswordStrengthIndicator password={password} />}
               </div>
               <Button type="submit" className="w-full" disabled={authLoading}>
                 {authLoading ? "Loading..." : isLogin ? "Sign in" : "Create account"}
