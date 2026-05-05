@@ -14,11 +14,11 @@ export function MacroChart({ logs }: MacroChartProps) {
   }));
 
   return (
-    <div className="rounded-xl border border-border bg-card p-6 animate-fade-in">
+    <div className="rounded-xl border border-border bg-card p-6 animate-fade-in min-w-0">
       <h3 className="text-lg font-semibold font-display text-card-foreground mb-1">Weekly Macros</h3>
       <p className="text-sm text-muted-foreground mb-5">Protein, carbs & fats breakdown</p>
-      <div className="h-56">
-        <ResponsiveContainer width="100%" height="100%">
+      <div className="h-56 min-w-0">
+        <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
           <BarChart data={data} barGap={2}>
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(180, 12%, 90%)" />
             <XAxis dataKey="date" tick={{ fontSize: 11 }} stroke="hsl(200, 10%, 45%)" />
