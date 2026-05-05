@@ -2,6 +2,8 @@
 // Returns categorized results: Popular Globally + Regional Favorites.
 // Understands food names in any language.
 
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
@@ -30,6 +32,27 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // Require authenticated user to prevent abuse of AI credits
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return new Response(
+        JSON.stringify({ error: "Authentication required", global: [], regional: [] }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+    const authClient = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_ANON_KEY")!,
+      { global: { headers: { Authorization: authHeader } } },
+    );
+    const { data: { user }, error: userErr } = await authClient.auth.getUser();
+    if (userErr || !user) {
+      return new Response(
+        JSON.stringify({ error: "Invalid authentication", global: [], regional: [] }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
     const { query, region } = await req.json();
 
     if (!query || typeof query !== "string" || query.trim().length === 0) {
