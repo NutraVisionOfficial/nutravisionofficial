@@ -27,7 +27,7 @@ export function WaterWeeklyChart() {
     : 0;
 
   return (
-    <div className="rounded-xl border border-border bg-card p-5 animate-fade-in">
+    <div className="rounded-xl border border-border bg-card p-5 animate-fade-in min-w-0">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-lg bg-blue-500/15 flex items-center justify-center">
@@ -39,8 +39,8 @@ export function WaterWeeklyChart() {
           </div>
         </div>
       </div>
-      <div className="h-40">
-        <ResponsiveContainer width="100%" height="100%">
+      <div className="h-40 min-w-0">
+        <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
           <BarChart data={chartData} barCategoryGap="25%">
             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
             <XAxis dataKey="label" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
