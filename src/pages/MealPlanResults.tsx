@@ -146,6 +146,7 @@ export default function MealPlanResults() {
 
   return (
     <div className="min-h-screen bg-background pb-32">
+      <Seo title="Your meal plan – NutraVision" description="Your AI-generated meal plan with full daily macros and easy-to-cook recipes." path="/meal-plan-results" />
       {/* Regeneration overlay */}
       {generating && <GeneratingOverlay />}
 

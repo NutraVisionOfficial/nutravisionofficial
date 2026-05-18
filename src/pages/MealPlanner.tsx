@@ -94,6 +94,7 @@ export default function MealPlanner() {
 
   return (
     <div className="min-h-screen bg-background">
+      <Seo title="AI Meal Planner – NutraVision" description="Generate personalized AI meal plans tailored to your calories, macros, and diet preferences." path="/meal-planner" />
       {/* Generation Loading Overlay */}
       {generating && (
         <div className="fixed inset-0 z-50 bg-background/95 backdrop-blur-sm flex flex-col items-center justify-center gap-6">

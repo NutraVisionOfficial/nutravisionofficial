@@ -70,6 +70,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <Seo title="NutraVision – Your AI Nutrition Companion" description="Track calories, macros, body composition, water, steps, and habits with your long-term AI nutrition companion." path="/" />
       <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-40">
         <div className="container max-w-6xl mx-auto flex items-center justify-between px-4 py-4">
           <div className="flex items-center gap-3">

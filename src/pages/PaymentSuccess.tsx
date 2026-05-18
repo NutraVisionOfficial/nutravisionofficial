@@ -21,6 +21,7 @@ export default function PaymentSuccess() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center px-4 text-center">
+      <Seo title="Welcome to Pro – NutraVision" description="Your NutraVision Pro upgrade is active. Unlock advanced AI features now." path="/payment-success" />
       <div className="space-y-6 max-w-md animate-fade-in">
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gold/15 text-gold text-xs font-semibold tracking-wide uppercase mx-auto">
           <Sparkles className="w-3.5 h-3.5" /> Welcome to Pro

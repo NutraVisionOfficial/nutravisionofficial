@@ -60,6 +60,7 @@ export default function Upgrade() {
 
   return (
     <div className="min-h-screen bg-[hsl(220,25%,8%)] text-white">
+      <Seo title="Upgrade to Pro – NutraVision" description="Unlock advanced AI meal planning, body composition analytics, and unlimited scans with NutraVision Pro." path="/upgrade" />
       {/* Nav */}
       <header className="sticky top-0 z-40 border-b border-white/10 bg-[hsl(220,25%,8%)]/80 backdrop-blur-sm">
         <div className="container max-w-4xl mx-auto flex items-center gap-3 px-4 py-4">

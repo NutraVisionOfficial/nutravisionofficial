@@ -95,6 +95,7 @@ export default function Progress() {
 
   return (
     <div className="min-h-screen bg-background">
+      <Seo title="Progress – NutraVision" description="See your long-term weight, calorie, and body composition trends with Future You predictions." path="/progress" />
       <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-40">
         <div className="container max-w-6xl mx-auto flex items-center gap-3 px-4 py-4">
           <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center">

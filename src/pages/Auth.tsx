@@ -62,6 +62,7 @@ export default function Auth() {
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <Seo title="Sign in – NutraVision" description="Sign in to NutraVision to track calories, macros, and your long-term body composition progress." path="/auth" />
       <div className="w-full max-w-sm space-y-6 animate-fade-in">
         <div className="text-center space-y-2">
           <div className="w-12 h-12 rounded-xl bg-primary flex items-center justify-center mx-auto">

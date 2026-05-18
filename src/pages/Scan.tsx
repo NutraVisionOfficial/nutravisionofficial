@@ -262,6 +262,7 @@ export default function Scan() {
 
   return (
     <div className="min-h-screen bg-background">
+      <Seo title="Scan food – NutraVision" description="Scan barcodes or photos of meals to instantly log calories and macros with AI." path="/scan" />
       <canvas ref={canvasRef} className="hidden" />
       <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleGallery} />
 

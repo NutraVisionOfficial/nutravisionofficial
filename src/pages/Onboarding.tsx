@@ -112,6 +112,7 @@ export default function Onboarding() {
   if (phase === "welcome") {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 animate-fade-in">
+        <Seo title="Get started – NutraVision" description="Create your NutraVision account and set your biometrics, goals, and diet preferences in minutes." path="/onboarding" />
         <div className="w-14 h-14 rounded-2xl bg-primary flex items-center justify-center mb-6">
           <Activity className="w-7 h-7 text-primary-foreground" />
         </div>
