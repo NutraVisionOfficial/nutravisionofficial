@@ -1,3 +1,4 @@
+import { Seo } from "@/components/Seo";
 import { useState, useEffect } from "react";
 import { ArrowLeft, Settings2, Sparkles, Lock, Loader2, ChefHat, Leaf, Timer, UtensilsCrossed } from "lucide-react";
 import { Button } from "@/components/ui/button";

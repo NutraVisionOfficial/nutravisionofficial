@@ -1,3 +1,4 @@
+import { Seo } from "@/components/Seo";
 import { useState, useCallback, useRef, useMemo } from "react";
 import { Camera, ImagePlus, Loader2, ArrowLeft, Plus, ShieldAlert, Minus } from "lucide-react";
 

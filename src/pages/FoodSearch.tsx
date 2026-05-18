@@ -1,3 +1,4 @@
+import { Seo } from "@/components/Seo";
 import { useState, useEffect, useCallback } from "react";
 import { Search as SearchIcon, Plus, Minus, Loader2, Globe2, MapPin, Bookmark, BookmarkCheck, Trash2 } from "lucide-react";
 import { useSavedFoods, useSaveFood, useDeleteSavedFood } from "@/hooks/useSavedFoods";

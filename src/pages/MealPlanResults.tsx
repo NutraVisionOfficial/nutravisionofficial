@@ -1,3 +1,4 @@
+import { Seo } from "@/components/Seo";
 import { useState, useMemo } from "react";
 import { ArrowLeft, RefreshCw, CalendarCheck, Shuffle, Clock, Flame, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";

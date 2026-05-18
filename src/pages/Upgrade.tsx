@@ -1,3 +1,4 @@
+import { Seo } from "@/components/Seo";
 import { useState } from "react";
 import { ArrowLeft, Sparkles, Brain, BarChart3, MessageCircle, Trophy, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";

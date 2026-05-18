@@ -1,3 +1,4 @@
+import { Seo } from "@/components/Seo";
 import { useState } from "react";
 import { Activity } from "lucide-react";
 import { Button } from "@/components/ui/button";

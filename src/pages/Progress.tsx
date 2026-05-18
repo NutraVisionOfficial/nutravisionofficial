@@ -1,3 +1,4 @@
+import { Seo } from "@/components/Seo";
 import { useMemo } from "react";
 import { format, subDays, startOfMonth, addDays } from "date-fns";
 import { TrendingDown, Flame, Zap, Dumbbell, Activity } from "lucide-react";

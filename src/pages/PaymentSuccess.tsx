@@ -1,3 +1,4 @@
+import { Seo } from "@/components/Seo";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Sparkles } from "lucide-react";
