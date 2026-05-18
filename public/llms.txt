@@ -1,0 +1,20 @@
+# NutraVision
+
+> Your long-term AI nutrition companion for tracking calories, macros, body composition, and habits over multi-year transformations.
+
+NutraVision combines AI-powered food scanning, physique analysis, meal planning, and progress analytics to help users sustain healthy nutrition habits over years, not weeks.
+
+## Pages
+
+- [Home](/): Daily dashboard with calories, macros, habits, weight, water, and body composition.
+- [Onboarding](/onboarding): Sign up and set biometrics, goals, and diet preferences.
+- [Sign in](/auth): Existing-user login.
+- [Upgrade](/upgrade): Pro plan with advanced AI features and analytics.
+
+## Optional
+
+- [Scan](/scan): Barcode and photo food scanning (requires account).
+- [Search](/search): Food database search and quick logging (requires account).
+- [Progress](/progress): Long-term charts and Future You predictions (requires account).
+- [Meal Planner](/meal-planner): AI-generated meal plans (requires account).
+- [Settings](/settings): Profile and preference management (requires account).

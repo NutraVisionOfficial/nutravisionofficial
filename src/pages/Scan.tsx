@@ -1,3 +1,4 @@
+import { Seo } from "@/components/Seo";
 import { useState, useCallback, useRef, useMemo } from "react";
 import { Camera, ImagePlus, Loader2, ArrowLeft, Plus, ShieldAlert, Minus } from "lucide-react";
 
@@ -262,6 +263,7 @@ export default function Scan() {
 
   return (
     <div className="min-h-screen bg-background">
+      <Seo title="Scan food – NutraVision" description="Scan barcodes or photos of meals to instantly log calories and macros with AI." path="/scan" />
       <canvas ref={canvasRef} className="hidden" />
       <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleGallery} />
 
