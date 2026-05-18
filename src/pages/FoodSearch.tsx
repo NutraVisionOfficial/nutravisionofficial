@@ -200,6 +200,7 @@ export default function FoodSearch() {
 
   return (
     <div className="min-h-screen bg-background">
+      <Seo title="Food search – NutraVision" description="Search foods and log calories and macros instantly with Quick Add shortcuts." path="/search" />
       <header className="bg-card/60 backdrop-blur-xl sticky top-0 z-40 border-b border-border">
         <div className="container max-w-lg mx-auto px-4 pt-6 pb-4">
           <h1 className="text-2xl font-bold font-display text-foreground mb-1">Food Search</h1>
