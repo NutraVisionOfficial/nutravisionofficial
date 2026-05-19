@@ -179,7 +179,7 @@ export function PhysiqueScanner() {
       {state === "results" && result && preview && (
         <div className="space-y-4">
           <div className="relative w-full rounded-xl overflow-hidden">
-            <img src={preview} alt="Analyzed" className="w-full h-48 object-cover rounded-xl opacity-80" />
+            <img src={preview} alt={`Analyzed physique photo, ${result.body_fat_percentage}% estimated body fat`} className="w-full h-48 object-cover rounded-xl opacity-80" />
             <div className="absolute inset-0 bg-gradient-to-t from-card via-card/60 to-transparent" />
             <div className="absolute bottom-4 left-0 right-0 text-center">
               <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Estimated Body Fat</p>
