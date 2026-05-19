@@ -298,7 +298,7 @@ export default function FoodSearch() {
             )}
 
             <section>
-              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-3">Quick Log</h3>
+              <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-3">Quick Log</h2>
               <div className="grid grid-cols-2 gap-3">
                 {QUICK_LOG.map((food) => (
                   <button key={food.name} onClick={() => openDrawer(food)} className="flex flex-col items-start gap-1.5 p-4 rounded-2xl border border-border bg-card hover:border-primary/40 hover:shadow-md hover:shadow-primary/5 transition-all active:scale-[0.97]">
