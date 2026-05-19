@@ -94,7 +94,7 @@ export default function Upgrade() {
         <div className="flex flex-col items-center gap-5">
           <div className="flex items-center gap-3 text-sm">
             <span className={yearly ? "text-white/40" : "text-white font-medium"}>Monthly</span>
-            <Switch checked={yearly} onCheckedChange={setYearly} />
+            <Switch checked={yearly} onCheckedChange={setYearly} aria-label="Toggle yearly billing" />
             <span className={yearly ? "text-white font-medium" : "text-white/40"}>Yearly</span>
             {yearly && (
               <span className="ml-1 px-2.5 py-0.5 rounded-full bg-gold/20 text-gold text-[10px] font-bold uppercase tracking-wide">
