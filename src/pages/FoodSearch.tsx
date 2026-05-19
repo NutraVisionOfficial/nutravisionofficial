@@ -249,9 +249,9 @@ export default function FoodSearch() {
 
             {globalResults.length > 0 && (
               <section>
-                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-3 flex items-center gap-1.5">
+                <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-3 flex items-center gap-1.5">
                   <Globe2 className="w-3 h-3" /> Popular Globally
-                </h3>
+                </h2>
                 <div className="space-y-2">
                   {globalResults.map((food, i) => (
                     <FoodRow key={`g-${i}-${food.name}`} food={food} onAdd={() => openDrawer(food)} />
