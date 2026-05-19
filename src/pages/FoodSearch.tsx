@@ -286,6 +286,7 @@ export default function FoodSearch() {
                       <Button
                         variant="ghost"
                         size="icon"
+                        aria-label={`Remove ${sf.food_name} from saved foods`}
                         className="h-8 w-8 text-muted-foreground hover:text-destructive shrink-0"
                         onClick={() => deleteSavedFood.mutate(sf.id)}
                       >
