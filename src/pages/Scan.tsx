@@ -271,7 +271,7 @@ export default function Scan() {
       <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-40">
         <div className="container max-w-6xl mx-auto flex items-center gap-3 px-4 py-4">
           {result && (
-            <button onClick={handleReset} className="p-1.5 rounded-lg hover:bg-muted transition-colors">
+            <button onClick={handleReset} aria-label="Back to scanner" className="p-1.5 rounded-lg hover:bg-muted transition-colors">
               <ArrowLeft className="w-5 h-5 text-muted-foreground" />
             </button>
           )}
