@@ -235,7 +235,7 @@ export default function Settings() {
               <Label className="text-sm">Budget-Friendly Mode</Label>
               <p className="text-xs text-muted-foreground">Optimizes suggestions for low-cost local staples</p>
             </div>
-            <Switch checked={budgetMode} onCheckedChange={setBudgetMode} />
+            <Switch checked={budgetMode} onCheckedChange={setBudgetMode} aria-label="Toggle budget-friendly mode" />
           </div>
         </div>
 
