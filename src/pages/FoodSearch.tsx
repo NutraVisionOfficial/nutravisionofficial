@@ -236,9 +236,9 @@ export default function FoodSearch() {
 
             {regionalResults.length > 0 && (
               <section>
-                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-3 flex items-center gap-1.5">
+                <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-3 flex items-center gap-1.5">
                   <MapPin className="w-3 h-3" /> Regional Favorites · {region}
-                </h3>
+                </h2>
                 <div className="space-y-2">
                   {regionalResults.map((food, i) => (
                     <FoodRow key={`r-${i}-${food.name}`} food={food} onAdd={() => openDrawer(food)} />
