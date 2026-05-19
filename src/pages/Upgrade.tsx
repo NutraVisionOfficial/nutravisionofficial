@@ -67,6 +67,7 @@ export default function Upgrade() {
         <div className="container max-w-4xl mx-auto flex items-center gap-3 px-4 py-4">
           <button
             onClick={() => navigate(-1)}
+            aria-label="Go back"
             className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-white/10 transition-colors"
           >
             <ArrowLeft className="w-5 h-5 text-white/70" />
