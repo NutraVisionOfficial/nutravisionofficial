@@ -342,6 +342,7 @@ export default function Scan() {
                 <div className="flex items-center gap-3">
                   <button
                     onClick={() => setQuantity((q) => Math.max(0.5, q - 0.5))}
+                    aria-label="Decrease quantity"
                     className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center hover:bg-muted/80 transition-colors"
                   >
                     <Minus className="w-4 h-4 text-foreground" />
@@ -349,6 +350,7 @@ export default function Scan() {
                   <span className="text-base font-bold text-foreground w-8 text-center">{quantity}</span>
                   <button
                     onClick={() => setQuantity((q) => q + 0.5)}
+                    aria-label="Increase quantity"
                     className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center hover:bg-muted/80 transition-colors"
                   >
                     <Plus className="w-4 h-4 text-foreground" />
