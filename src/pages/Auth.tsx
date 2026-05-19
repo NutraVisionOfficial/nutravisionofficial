@@ -69,7 +69,7 @@ export default function Auth() {
           <div className="w-12 h-12 rounded-xl bg-primary flex items-center justify-center mx-auto">
             <Activity className="w-6 h-6 text-primary-foreground" />
           </div>
-          <h1 className="text-2xl font-bold font-display text-foreground">NutraVision</h1>
+          <h1 className="text-2xl font-bold font-display text-foreground">NutraVision — AI Nutrition Companion</h1>
           <p className="text-sm text-muted-foreground">Your long-term AI nutrition companion</p>
         </div>
 

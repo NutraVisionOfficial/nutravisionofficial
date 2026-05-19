@@ -236,9 +236,9 @@ export default function FoodSearch() {
 
             {regionalResults.length > 0 && (
               <section>
-                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-3 flex items-center gap-1.5">
+                <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-3 flex items-center gap-1.5">
                   <MapPin className="w-3 h-3" /> Regional Favorites · {region}
-                </h3>
+                </h2>
                 <div className="space-y-2">
                   {regionalResults.map((food, i) => (
                     <FoodRow key={`r-${i}-${food.name}`} food={food} onAdd={() => openDrawer(food)} />
@@ -249,9 +249,9 @@ export default function FoodSearch() {
 
             {globalResults.length > 0 && (
               <section>
-                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-3 flex items-center gap-1.5">
+                <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-3 flex items-center gap-1.5">
                   <Globe2 className="w-3 h-3" /> Popular Globally
-                </h3>
+                </h2>
                 <div className="space-y-2">
                   {globalResults.map((food, i) => (
                     <FoodRow key={`g-${i}-${food.name}`} food={food} onAdd={() => openDrawer(food)} />
@@ -264,9 +264,9 @@ export default function FoodSearch() {
           <>
             {savedFoods.length > 0 && (
               <section>
-                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-3 flex items-center gap-1.5">
+                <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-3 flex items-center gap-1.5">
                   <BookmarkCheck className="w-3 h-3" /> My Saved Foods
-                </h3>
+                </h2>
                 <div className="space-y-2">
                   {savedFoods.map((sf) => (
                     <div key={sf.id} className="w-full flex items-center justify-between rounded-xl border border-primary/20 bg-card p-4 hover:border-primary/40 transition-all">
@@ -286,6 +286,7 @@ export default function FoodSearch() {
                       <Button
                         variant="ghost"
                         size="icon"
+                        aria-label={`Remove ${sf.food_name} from saved foods`}
                         className="h-8 w-8 text-muted-foreground hover:text-destructive shrink-0"
                         onClick={() => deleteSavedFood.mutate(sf.id)}
                       >
@@ -298,7 +299,7 @@ export default function FoodSearch() {
             )}
 
             <section>
-              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-3">Quick Log</h3>
+              <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-3">Quick Log</h2>
               <div className="grid grid-cols-2 gap-3">
                 {QUICK_LOG.map((food) => (
                   <button key={food.name} onClick={() => openDrawer(food)} className="flex flex-col items-start gap-1.5 p-4 rounded-2xl border border-border bg-card hover:border-primary/40 hover:shadow-md hover:shadow-primary/5 transition-all active:scale-[0.97]">
@@ -359,11 +360,11 @@ export default function FoodSearch() {
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-medium text-foreground">Quantity</span>
                       <div className="flex items-center gap-3">
-                        <Button variant="outline" size="icon" className="h-9 w-9 rounded-full" onClick={() => setQuantity(Math.max(0.25, +(quantity - 0.25).toFixed(2)))}>
+                        <Button variant="outline" size="icon" aria-label="Decrease quantity" className="h-9 w-9 rounded-full" onClick={() => setQuantity(Math.max(0.25, +(quantity - 0.25).toFixed(2)))}>
                           <Minus className="w-4 h-4" />
                         </Button>
                         <span className="text-xl font-bold font-display text-foreground w-14 text-center">{quantity}×</span>
-                        <Button variant="outline" size="icon" className="h-9 w-9 rounded-full" onClick={() => setQuantity(+(quantity + 0.25).toFixed(2))}>
+                        <Button variant="outline" size="icon" aria-label="Increase quantity" className="h-9 w-9 rounded-full" onClick={() => setQuantity(+(quantity + 0.25).toFixed(2))}>
                           <Plus className="w-4 h-4" />
                         </Button>
                       </div>

@@ -119,7 +119,7 @@ export function PhysiqueScanner() {
       {/* SCANNING: Photo with laser overlay */}
       {state === "scanning" && preview && (
         <div className="relative w-full rounded-xl overflow-hidden">
-          <img src={preview} alt="Uploaded" className="w-full h-64 object-cover rounded-xl" />
+          <img src={preview} alt="Uploaded physique photo being analyzed" className="w-full h-64 object-cover rounded-xl" />
           {/* Scanning laser */}
           <div className="absolute inset-0 pointer-events-none">
             <div
@@ -147,7 +147,7 @@ export function PhysiqueScanner() {
         <div className="space-y-4">
           {preview && (
             <div className="relative w-full rounded-xl overflow-hidden">
-              <img src={preview} alt="Uploaded" className="w-full h-48 object-cover rounded-xl opacity-40" />
+              <img src={preview} alt="Uploaded physique photo with analysis error" className="w-full h-48 object-cover rounded-xl opacity-40" />
               <div className="absolute inset-0 bg-gradient-to-t from-card via-card/70 to-card/30" />
             </div>
           )}
@@ -179,7 +179,7 @@ export function PhysiqueScanner() {
       {state === "results" && result && preview && (
         <div className="space-y-4">
           <div className="relative w-full rounded-xl overflow-hidden">
-            <img src={preview} alt="Analyzed" className="w-full h-48 object-cover rounded-xl opacity-80" />
+            <img src={preview} alt={`Analyzed physique photo, ${result.body_fat_percentage}% estimated body fat`} className="w-full h-48 object-cover rounded-xl opacity-80" />
             <div className="absolute inset-0 bg-gradient-to-t from-card via-card/60 to-transparent" />
             <div className="absolute bottom-4 left-0 right-0 text-center">
               <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Estimated Body Fat</p>

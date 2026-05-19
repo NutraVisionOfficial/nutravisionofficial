@@ -234,6 +234,7 @@ export default function Onboarding() {
             <Button
               variant="ghost"
               size="icon"
+              aria-label={step === 1 ? "Back to home" : "Previous step"}
               className="h-10 w-10 text-muted-foreground hover:text-foreground"
               onClick={() => {
                 if (step === 1) {

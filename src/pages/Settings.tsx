@@ -96,7 +96,7 @@ export default function Settings() {
       <Seo title="Settings – NutraVision" description="Manage your NutraVision profile, diet preferences, and calorie targets." path="/settings" />
       <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-40">
         <div className="container max-w-2xl mx-auto flex items-center gap-3 px-4 py-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate("/")}>
+          <Button variant="ghost" size="icon" aria-label="Back to dashboard" onClick={() => navigate("/")}>
             <ArrowLeft className="w-5 h-5" />
           </Button>
           <h1 className="text-lg font-bold font-display text-foreground">Profile & Goals</h1>
@@ -235,7 +235,7 @@ export default function Settings() {
               <Label className="text-sm">Budget-Friendly Mode</Label>
               <p className="text-xs text-muted-foreground">Optimizes suggestions for low-cost local staples</p>
             </div>
-            <Switch checked={budgetMode} onCheckedChange={setBudgetMode} />
+            <Switch checked={budgetMode} onCheckedChange={setBudgetMode} aria-label="Toggle budget-friendly mode" />
           </div>
         </div>
 

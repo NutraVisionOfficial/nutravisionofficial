@@ -113,7 +113,7 @@ export function BeforeAfterComparison() {
           {/* Before */}
           <div className="space-y-2">
             <div className="relative rounded-xl overflow-hidden aspect-[3/4] bg-muted group">
-              <img src={signedUrls[before.photo_url] || before.photo_url} alt="Before" className="w-full h-full object-cover" />
+              <img src={signedUrls[before.photo_url] || before.photo_url} alt={`Before physique scan, ${before.body_fat_percentage}% body fat`} className="w-full h-full object-cover" />
               <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-card/90 to-transparent p-3 pt-8">
                 <p className={`text-2xl font-bold font-display ${getColor(before.body_fat_percentage)}`}>
                   {before.body_fat_percentage}%
@@ -142,7 +142,7 @@ export function BeforeAfterComparison() {
           {/* After */}
           <div className="space-y-2">
             <div className="relative rounded-xl overflow-hidden aspect-[3/4] bg-muted group">
-              <img src={signedUrls[after.photo_url] || after.photo_url} alt="After" className="w-full h-full object-cover" />
+              <img src={signedUrls[after.photo_url] || after.photo_url} alt={`Latest physique scan, ${after.body_fat_percentage}% body fat`} className="w-full h-full object-cover" />
               <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-card/90 to-transparent p-3 pt-8">
                 <p className={`text-2xl font-bold font-display ${getColor(after.body_fat_percentage)}`}>
                   {after.body_fat_percentage}%

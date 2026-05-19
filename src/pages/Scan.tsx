@@ -271,7 +271,7 @@ export default function Scan() {
       <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-40">
         <div className="container max-w-6xl mx-auto flex items-center gap-3 px-4 py-4">
           {result && (
-            <button onClick={handleReset} className="p-1.5 rounded-lg hover:bg-muted transition-colors">
+            <button onClick={handleReset} aria-label="Back to scanner" className="p-1.5 rounded-lg hover:bg-muted transition-colors">
               <ArrowLeft className="w-5 h-5 text-muted-foreground" />
             </button>
           )}
@@ -342,6 +342,7 @@ export default function Scan() {
                 <div className="flex items-center gap-3">
                   <button
                     onClick={() => setQuantity((q) => Math.max(0.5, q - 0.5))}
+                    aria-label="Decrease quantity"
                     className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center hover:bg-muted/80 transition-colors"
                   >
                     <Minus className="w-4 h-4 text-foreground" />
@@ -349,6 +350,7 @@ export default function Scan() {
                   <span className="text-base font-bold text-foreground w-8 text-center">{quantity}</span>
                   <button
                     onClick={() => setQuantity((q) => q + 0.5)}
+                    aria-label="Increase quantity"
                     className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center hover:bg-muted/80 transition-colors"
                   >
                     <Plus className="w-4 h-4 text-foreground" />
