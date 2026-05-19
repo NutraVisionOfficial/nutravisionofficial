@@ -360,11 +360,11 @@ export default function FoodSearch() {
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-medium text-foreground">Quantity</span>
                       <div className="flex items-center gap-3">
-                        <Button variant="outline" size="icon" className="h-9 w-9 rounded-full" onClick={() => setQuantity(Math.max(0.25, +(quantity - 0.25).toFixed(2)))}>
+                        <Button variant="outline" size="icon" aria-label="Decrease quantity" className="h-9 w-9 rounded-full" onClick={() => setQuantity(Math.max(0.25, +(quantity - 0.25).toFixed(2)))}>
                           <Minus className="w-4 h-4" />
                         </Button>
                         <span className="text-xl font-bold font-display text-foreground w-14 text-center">{quantity}×</span>
-                        <Button variant="outline" size="icon" className="h-9 w-9 rounded-full" onClick={() => setQuantity(+(quantity + 0.25).toFixed(2))}>
+                        <Button variant="outline" size="icon" aria-label="Increase quantity" className="h-9 w-9 rounded-full" onClick={() => setQuantity(+(quantity + 0.25).toFixed(2))}>
                           <Plus className="w-4 h-4" />
                         </Button>
                       </div>
