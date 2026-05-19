@@ -264,9 +264,9 @@ export default function FoodSearch() {
           <>
             {savedFoods.length > 0 && (
               <section>
-                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-3 flex items-center gap-1.5">
+                <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-3 flex items-center gap-1.5">
                   <BookmarkCheck className="w-3 h-3" /> My Saved Foods
-                </h3>
+                </h2>
                 <div className="space-y-2">
                   {savedFoods.map((sf) => (
                     <div key={sf.id} className="w-full flex items-center justify-between rounded-xl border border-primary/20 bg-card p-4 hover:border-primary/40 transition-all">
