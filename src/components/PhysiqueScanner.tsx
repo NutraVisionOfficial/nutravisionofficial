@@ -119,7 +119,7 @@ export function PhysiqueScanner() {
       {/* SCANNING: Photo with laser overlay */}
       {state === "scanning" && preview && (
         <div className="relative w-full rounded-xl overflow-hidden">
-          <img src={preview} alt="Uploaded" className="w-full h-64 object-cover rounded-xl" />
+          <img src={preview} alt="Uploaded physique photo being analyzed" className="w-full h-64 object-cover rounded-xl" />
           {/* Scanning laser */}
           <div className="absolute inset-0 pointer-events-none">
             <div
