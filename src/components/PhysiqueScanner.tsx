@@ -147,7 +147,7 @@ export function PhysiqueScanner() {
         <div className="space-y-4">
           {preview && (
             <div className="relative w-full rounded-xl overflow-hidden">
-              <img src={preview} alt="Uploaded" className="w-full h-48 object-cover rounded-xl opacity-40" />
+              <img src={preview} alt="Uploaded physique photo with analysis error" className="w-full h-48 object-cover rounded-xl opacity-40" />
               <div className="absolute inset-0 bg-gradient-to-t from-card via-card/70 to-card/30" />
             </div>
           )}
